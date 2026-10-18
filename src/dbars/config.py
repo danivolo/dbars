@@ -6,8 +6,9 @@ String values have ``${VAR}``, ``${VAR:-default}`` and a leading ``~`` expanded 
 
 The output root is resolved in this order (brief, "Configuration"):
 1. an explicit ``out`` argument (the scripts' ``--out``);
-2. ``$ASTRO_RUNDIR`` (set by ``astro submit`` inside a cluster job);
-3. ``paths.outputs`` from the config.
+2. ``$DBARS_OUT`` (a resume job that continues an earlier run directory, see DECISIONS D11);
+3. ``$ASTRO_RUNDIR`` (set by ``astro submit`` inside a cluster job);
+4. ``paths.outputs`` from the config.
 """
 
 from __future__ import annotations
@@ -151,9 +152,11 @@ def config_hash(cfg: dict) -> str:
 
 
 def output_root(cfg: dict, out: str | os.PathLike | None = None) -> Path:
-    """Output root: ``out`` > ``$ASTRO_RUNDIR`` > ``paths.outputs``."""
+    """Output root: ``out`` > ``$DBARS_OUT`` > ``$ASTRO_RUNDIR`` > ``paths.outputs``."""
     if out:
         return Path(os.path.expanduser(str(out)))
+    if os.environ.get("DBARS_OUT"):
+        return Path(os.path.expanduser(os.environ["DBARS_OUT"]))
     rd = os.environ.get("ASTRO_RUNDIR")
     if rd:
         return Path(rd)

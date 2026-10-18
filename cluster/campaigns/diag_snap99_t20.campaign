@@ -1,0 +1,4 @@
+#question: milestone 4 dry run: time, memory per task and output size of step 02 on the 20 most expensive snap-99 galaxies
+#criteria: every task exits 0; `done N/N failed 0` in each log; profile files < 1 MB; Maximum resident set size per task (py_tasks_*/task_*.log) noted
+#cost: 1 job x 1 node, 20 tasks of 1 galaxy each (the largest), expected well under 1 h
+bars diag99_t20 --script $HOME/astro/gizmo/scripts/cluster/submit_python_tasks.slurm --env WORKDIR=$HOME/astro/clap/bars --mem 64 --time 01:00:00 -- $HOME/astro/scratch/bars/tasks/diag_snap99_t20.txt

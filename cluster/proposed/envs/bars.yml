@@ -1,0 +1,21 @@
+# bars (tng50-doublebars, package dbars): catalog readers, bar diagnostics, isophote fits, figures.
+# Pins = the laptop environment on 2026-10-18 (~/astro/envs/bars, built with uv from PyPI; conda-forge availability
+# of these exact versions not checked). astroplot is needed only for figures (skipped where it is not cloned).
+# astro-editable: ~/astro/clap/bars
+# astro-editable: ~/astro/analysis/astroplot
+name: bars
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - numpy=2.5.4
+  - scipy=1.18.1
+  - h5py=3.16.0
+  - pandas=3.0.6
+  - pyarrow=26.0.0
+  - pyyaml=6.0.3
+  - matplotlib=3.11.2
+  - astropy=8.0.2
+  - photutils=3.1.1
+  - pytest=9.1.1

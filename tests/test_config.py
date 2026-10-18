@@ -43,9 +43,12 @@ def test_overrides(repo):
 def test_output_root_order(repo, monkeypatch, tmp_path):
     cfg = load_config(repo / "config/cluster.yaml")
     monkeypatch.delenv("ASTRO_RUNDIR", raising=False)
+    monkeypatch.delenv("DBARS_OUT", raising=False)
     assert str(output_root(cfg)).endswith("astro/runs/bars/manual")
     monkeypatch.setenv("ASTRO_RUNDIR", str(tmp_path / "rd"))
     assert output_root(cfg) == tmp_path / "rd"
+    monkeypatch.setenv("DBARS_OUT", str(tmp_path / "old"))
+    assert output_root(cfg) == tmp_path / "old"
     assert output_root(cfg, tmp_path / "x") == tmp_path / "x"
 
 

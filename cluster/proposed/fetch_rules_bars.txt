@@ -1,0 +1,4 @@
+# Proposed entry for fetch_rules() in scripts/cluster/astro (core-fixes): what `astro fetch` copies for project bars.
+# Text results plus the parquet tables, the per-galaxy profile files (< 1 MB each, ~900 per snapshot), figures,
+# data checks and per-galaxy logs. Not the particles (they are never in a run directory).
+        bars)  echo "--include=*/ --include=*.parquet --include=profiles/*** --include=figures/*** --include=checks/*.json --include=logs/*.log --include=OUTPUT_ROOT --include=RUNINFO --include=STATUS --include=digest.txt --include=py_tasks_* --include=task_*.log --include=exit_* --include=slurm_* --exclude=*";;

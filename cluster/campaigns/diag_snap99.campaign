@@ -1,0 +1,4 @@
+#question: bar diagnostics (Fourier, Omega_p, ellipse fits, maps, first labels) for every snap-99 galaxy with an npz
+#criteria: every task exits 0; galaxies:N/N in `astro row`; failed galaxies listed in logs/ (status=fail) are understood before step 03
+#cost: 1 job x 1 node, ~45 tasks of ~20 galaxies, 20 at a time; --mem and --time from the diag99_t20 dry run (milestone 4)
+bars diag99 --script $HOME/astro/gizmo/scripts/cluster/submit_python_tasks.slurm --env WORKDIR=$HOME/astro/clap/bars --mem 64 --time TODO_FROM_DRY_RUN -- $HOME/astro/scratch/bars/tasks/diag_snap99.txt

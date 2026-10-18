@@ -64,3 +64,26 @@ Format: choice — alternatives — reason — reference. Per-change entries: sy
 - Assumed [memory]: the extraction did pos/h and left velocities as stored, i.e. exact values are pos*a and vel*sqrt(a). Switch
   `particles.correct_scale_factor` (default false); the reader warns once per snapshot with a != 1. To decide after reading the legacy
   extraction script; at snap 98 (a ~ 0.99) the effect is ~1 % on lengths and ~0.5 % on Omega_p.
+
+## D11. Stop and resume of a task farm (2026-10-18)
+- Choice: every task checks `<root>/output/stop` (and `$ASTRO_RUNDIR/output/stop`) before each galaxy and never deletes it; a stop file older
+  than the job's `start=` (STATUS) is stale and ignored. A resume is a new run (`astro submit ... --env DBARS_OUT=<old run dir>`) that
+  writes into the old directory and skips its finished galaxies; it leaves `OUTPUT_ROOT` in its own run directory for the row hook.
+- Alternatives: delete the stop file when seen (GIZMO's way) — with ~20 tasks per job only the first task would stop; `astro resume` —
+  GIZMO runs only (RESTARTABLE.md §2); reusing the run name — refused by `astro submit`.
+- Verification: `tests/test_scripts.py::test_stop_and_resume` (laptop; stop during the first galaxy, rerun in the same job still stopped,
+  a later job resumes, results identical to an uninterrupted run). On the cluster: `cluster/README.md` §6 [not verified].
+- Until §6 has passed on the cluster, the campaigns are not marked restartable (no `--restartable`, no `--nice`).
+
+## D12. Task files are generated on the cluster, outside the clone (2026-10-18)
+- Choice: `make_tasks.py --out ~/astro/scratch/bars/tasks/<name>.txt` on the cluster (it needs the step-01 table, which exists only there);
+  the campaign lines point there; the user copies them back and they are committed under `cluster/tasks/` as the record of what ran.
+- Reason: a file written into the clone makes it dirty, and `astro pull` refuses a dirty tree; the same file arriving later by `git pull`
+  would also collide with the untracked copy.
+
+## D13. Row hook and fetch rule proposals (2026-10-18)
+- `cluster/proposed/health/bars.sh`: progress = profile files present / galaxies named in the task file (not tasks done: tasks are long,
+  ~20 galaxies each); WARN on failed galaxies, BAD on a non-zero task exit or a failed job. [verified: `test_bars_row.sh` with the shared
+  `lib.sh` of core-fixes-yield-archive, laptop, no Slurm]
+- `cluster/proposed/fetch_rules_bars.txt`: parquet tables, `profiles/***`, `figures/***`, `checks/*.json`, `logs/*.log` and the usual text files.
+- `cluster/proposed/envs/bars.yml`: the laptop pins; conda-forge availability of the exact versions not checked.

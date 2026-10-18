@@ -1,0 +1,5 @@
+# Proposed lines for the cluster's ~/astro/state/astro.conf (the user's file; ALIGN.md 1.5):
+# 1) in ASTRO_PROJECTS, one line:
+bars  $HOME/astro/clap/bars  -  -  bars
+# 2) add the campaign directory to ASTRO_CAMPAIGN_DIRS (a value in astro.conf overrides one from the environment):
+#    ASTRO_CAMPAIGN_DIRS="... $HOME/astro/clap/bars/cluster/campaigns"

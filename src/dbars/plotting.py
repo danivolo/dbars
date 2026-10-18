@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import numpy as np
 from matplotlib.patches import Ellipse
+from matplotlib.ticker import NullFormatter
 
 from astroplot import fig_grid, palette
 
@@ -114,18 +115,21 @@ def diagnostic_figure(res: dict, title: str = ""):
     a = ax[2, 2]
     el = res.get("ellipse")
     if el is not None and len(el.get("sma", [])):
+        a.set_xscale("log")
         a.plot(el["sma"], el["eps"], "o-", color=palette.ROLE["ref"], ms=3)
         b = a.twinx()
         b.plot(el["sma"], el["pa"], "s", color=C_AUX, ms=3)
         b.set_ylim(-90, 90)
         b.set_ylabel("PA [deg]")
-        a.set_xscale("log")
     else:
         a.text(0.5, 0.5, "no isophote fit", transform=a.transAxes, ha="center")
     a.set_xlabel("a [kpc]")
     a.set_ylabel(r"$\epsilon$")
     _shade(a, cls)
 
+    for a in ax[2]:
+        if a.get_xscale() == "log":
+            a.xaxis.set_minor_formatter(NullFormatter())
     txt = title or ""
     txt += f"  {cls.get('label', '?')}"
     if np.isfinite(cls.get("misalignment_deg", np.nan) or np.nan):

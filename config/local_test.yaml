@@ -10,3 +10,5 @@ paths:
   outputs: ~/astro/scratch/bars/local_test
 analysis:
   n_bootstrap: 20
+  map_pixel_kpc: 0.2             # coarser maps: the isophote fit dominates the run time
+  map_halfwidth_kpc: 8.0

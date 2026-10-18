@@ -1,7 +1,9 @@
 """Run plumbing shared by the scripts: chunks, stop file, atomic text writes, per-galaxy log lines, provenance.
 
-No physics here. RESTARTABLE.md rule 1: the stop file is ``<root>/output/stop``, checked between galaxies
-(one ``stat``); when present the script removes it, finishes the galaxy in hand, and exits 0.
+No physics here. RESTARTABLE.md rule 1: the stop file is ``<root>/output/stop`` (and ``$ASTRO_RUNDIR/output/stop``
+when that differs), checked between galaxies (one ``stat`` each). The file is NOT removed: one job runs ~20 tasks
+side by side and all of them must stop. A stop file older than the start of the current job (``start=`` in
+``$ASTRO_RUNDIR/STATUS``, else this process's start) is stale and ignored, so a resume needs no cleaning.
 """
 
 from __future__ import annotations
@@ -28,15 +30,40 @@ def chunk_sids(sids_by_cost, i: int, n: int):
     return list(sids_by_cost)[i - 1::n]
 
 
-def stop_requested(root) -> bool:
-    return stop_file(root).exists()
+_T_PROC = time.time()
 
 
-def consume_stop(root) -> None:
-    try:
-        stop_file(root).unlink()
-    except FileNotFoundError:
-        pass
+def job_start_time() -> float:
+    """Start of the current job [unix s]: last ``start=`` of $ASTRO_RUNDIR/STATUS, else this process's start."""
+    rd = os.environ.get("ASTRO_RUNDIR")
+    if rd:
+        try:
+            starts = [ln.split("=", 1)[1].strip() for ln in open(Path(rd) / "STATUS") if ln.startswith("start=")]
+            if starts:
+                return time.mktime(time.strptime(starts[-1], "%Y-%m-%d %H:%M:%S"))
+        except (OSError, ValueError):
+            pass
+    return _T_PROC
+
+
+def stop_files(root):
+    files = [stop_file(root)]
+    rd = os.environ.get("ASTRO_RUNDIR")
+    if rd and Path(rd).resolve() != Path(root).resolve():
+        files.append(stop_file(rd))
+    return files
+
+
+def stop_requested(root, since: float | None = None) -> bool:
+    """True if a stop file not older than ``since`` (default: :func:`job_start_time`) exists."""
+    t0 = job_start_time() if since is None else since
+    for f in stop_files(root):
+        try:
+            if f.stat().st_mtime >= t0 - 1.0:
+                return True
+        except FileNotFoundError:
+            pass
+    return False
 
 
 def atomic_write_text(path, text: str) -> Path:
