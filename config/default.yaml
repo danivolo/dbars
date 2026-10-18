@@ -23,6 +23,27 @@ analysis:
   a2_threshold: 0.15
   phase_tol_deg: 10.0
   map_pixel_kpc: 0.1
+  map_halfwidth_kpc: 10.0        # face-on maps and the ellipse fit cover +-10 kpc
+  zoom_halfwidth_kpc: 2.0
+  omega_window_bins: 1.0         # Gaussian window sigma for Omega_p(R), in bin widths
+  omega_a2_min: 0.05             # Omega_p(R) masked where the window A2 is below this ...
+  omega_a2_snr: 3.0              # ... or below this many bootstrap sigma
+  ellipse_sma0_kpc: 1.0
+  ellipse_minsma_kpc: 0.2
+  ellipse_maxsma_kpc: 8.0
+  ellipse_step: 0.1
+classify:                        # tuned after visual inspection (milestone 5; see DECISIONS)
+  min_segment_bins: 3
+  phase_offset_min_deg: 15.0     # inner/outer phase offset must exceed this ...
+  phase_offset_nsigma: 3.0       # ... and this many sigma
+  omega_nsigma: 3.0              # decoupled: |Om_in - Om_out| > nsigma * sigma ...
+  omega_rel_min: 0.2             # ... and > 20 % of Om_out
+  omega_corr_bins: 2.5           # neighbouring Omega_p bins share particles: error of a segment mean x sqrt(this)
+  inner_marginal_softenings: 3.0 # inner bar shorter than this many softening lengths is flagged marginal
+  ellipse_eps_min: 0.2
+  ellipse_pa_tol_deg: 10.0
+  ellipse_match: [0.4, 1.3]      # an ellipse run overlapping [0.4, 1.3] x bar length ...
+  ellipse_pa_match_deg: 20.0     # ... with PA within this of phi_2 confirms that bar
 run:
   workers: 1                     # processes inside one task; on the cluster parallelism comes from the task file
   seed: 12345                    # bootstrap seed (per galaxy: seed + sid)
