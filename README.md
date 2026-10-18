@@ -58,7 +58,7 @@ $PY scripts/02_galaxy_diagnostics.py $C --snap 99 --chunk 1/1 && $PY scripts/03_
 ## Status per milestone
 - [x] 1. Skeleton: repo, pyproject, config loading, docs, pytest
 - [x] 2. Library and synthetic tests (legacy scripts and the sample galaxies still to read/check: need the user's rsync, `cluster/README.md` §7)
-- [x] 3. Scripts and cluster files (proposals for the shared tooling in `cluster/proposed/`, waiting for the user)
+- [x] 3. Scripts and cluster files (shared-tooling files committed on core-fixes-yield-archive d0759d1)
 - [ ] 4. Cluster dry run (user)
 - [ ] 5. Full snap 99 and 98
 - [ ] 6. Time evolution (SubLink)

@@ -16,11 +16,16 @@ git -C ~/astro/clap/bars push -u origin main
 mkdir -p ~/astro/clap ~/astro/scratch/bars/tasks ~/astro/runs/bars
 git clone -b main git@github.com:<you>/tng50-doublebars.git ~/astro/clap/bars
 ```
-Environment. Once `cluster/proposed/envs/bars.yml` is in the shared tooling (core-fixes):
+Environment. The env file, the `bars` row hook and fetch rule are committed on `core-fixes-yield-archive` (d0759d1, 2026-10-18).
+On the laptop, publish that branch (it also carries the unpushed merge 7518108):
 ```bash
-git -C ~/astro/gizmo pull && astro pyenv create bars          # builds ~/astro/envs/bars, installs the repo (and astroplot if cloned) editable
+git -C ~/astro/gizmo push origin core-fixes-yield-archive
 ```
-Until then, by hand (same pins):
+On the cluster (the tooling clone must be on that branch):
+```bash
+git -C ~/astro/gizmo pull && astro pyenv create bars          # builds ~/astro/envs/bars, installs the repo (and astroplot once cloned) editable
+```
+If `astro pyenv` is not available there, by hand (same pins):
 ```bash
 module load miniforge3
 conda create -y -p ~/astro/envs/bars -c conda-forge python=3.12 pip numpy=2.5.4 scipy=1.18.1 h5py=3.16.0 pandas=3.0.6 \
@@ -42,11 +47,17 @@ cd ~/astro/clap/bars
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 PY=~/astro/envs/bars/bin/python
 nice -n 10 $PY scripts/00_check_data.py --config config/cluster.yaml
 ```
-Expected: a table, one row per snapshot of `snapshots:` (99, 98): `snap z chunks offsets npz expect miss extra complete`, e.g.
+Expected: a table, one row per snapshot of `snapshots:` (99 down to 91): `snap z chunks offsets npz expect miss extra complete`, e.g.
 `99 0.0000 680/680 True 903 903 0 0 True`. `expect` counts the catalog subhaloes with M* >= 1e10 Msun (SubhaloMassType[4]).
 If `miss`/`extra` are not 0, the extraction used another M* definition or skipped galaxies: paste the table and
 `head -c 1500 ~/astro/runs/bars/manual/checks/snap99.json`. A `header:` line means the path or file layout differs from
 `config/cluster.yaml` [memory: paths from the user, not yet listed by a command].
+
+Also list the supplementary catalogues (bar_properties.hdf5 may give an independent bar sample to compare with; paste the output):
+```bash
+for f in ~/bars/TNG50-1/supplementary_catalogs/*.hdf5 ~/bars/extra_data/*.hdf5; do echo "== $f"
+  $PY -c "import h5py,sys; f=h5py.File(sys.argv[1],'r'); f.visititems(lambda n,o: print(n, getattr(o,'shape',''), getattr(o,'dtype',''), dict(o.attrs) if len(o.attrs)<6 else '')); print('root attrs', dict(f.attrs))" "$f" | head -40; done
+```
 
 ## 3. Catalog table (step 01, login node)
 ```bash
@@ -76,7 +87,7 @@ tail -qn 1 $R/logs/*.log | sort | uniq -c
 du -sh $R/profiles; ls -l $R/profiles/snap99 | sort -k5 -n | tail -3
 ```
 From these I set `--mem`, `NPAR` and `--time` in `diag_snap99.campaign` / `diag_snap98.campaign` (now `TODO_FROM_DRY_RUN`).
-Also tell me the partition's wall-time limit. Then fetch to the laptop (prints an rsync line to run **on the laptop**; until the
+(The partition has no wall-time limit [from the user, 2026-10-18]; `--time` only has to cover the job.) Then fetch to the laptop (prints an rsync line to run **on the laptop**; until the
 `bars` fetch rule is in, it brings only text files, which is enough for this step):
 ```bash
 astro fetch diag99_t20
@@ -131,7 +142,9 @@ EOF
 Expected: `same 20/20`, `done ... stopped` in some logs of `cut20`, `status=skip` lines in the logs written by `cut20_r`.
 Only after this may the campaigns use `--restartable` (and `--nice`).
 
-## 7. Legacy scripts and sample galaxies (to the laptop; run on the laptop)
+## 7. Legacy scripts and sample galaxies (to the laptop; run on the laptop) — needed soon
+The extraction's unit conversion decides whether snapshots 91-97 (a down to ~0.9 [memory]) need the scale-factor correction,
+so please run the first rsync before the full campaigns.
 ```bash
 mkdir -p ~/astro/scratch/bars/legacy && rsync -av --include='*/' --include='*.py' --include='*.sh' --include='*.slurm' \
     --include='*.md' --exclude='*' cluster:~/bars/ ~/astro/scratch/bars/legacy/

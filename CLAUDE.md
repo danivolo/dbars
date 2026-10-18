@@ -40,8 +40,8 @@ M★ > 1e10) and catalogs on the cluster under `~/bars` (**read-only**). Goal: a
   units converted with a = 1 (wrong for snap ≠ 99 unless corrected); no ParticleIDs.
 
 ## Status
-See README "Status per milestone" and `cluster/README.md` (the user's next commands). Proposals for the shared tooling (env file, row hook,
-fetch rule, astro.conf lines) are in `cluster/proposed/` and wait for the user's decision.
+See README "Status per milestone" and `cluster/README.md` (the user's next commands). The shared-tooling proposals (env file, row hook,
+fetch rule) are committed on `core-fixes-yield-archive` (d0759d1); `cluster/proposed/` stays the source of truth for the hook.
 
 ## Working notes
 - The laptop is often at load 30-50: time with `time.process_time()`, not wall clock; the full test suite takes 2-6 min wall.

@@ -87,3 +87,16 @@ Format: choice — alternatives — reason — reference. Per-change entries: sy
   `lib.sh` of core-fixes-yield-archive, laptop, no Slurm]
 - `cluster/proposed/fetch_rules_bars.txt`: parquet tables, `profiles/***`, `figures/***`, `checks/*.json`, `logs/*.log` and the usual text files.
 - `cluster/proposed/envs/bars.yml`: the laptop pins; conda-forge availability of the exact versions not checked.
+
+## D14. Cluster facts from the user, 2026-10-18
+- No wall-time limit on the partition: `--time` just covers the job (set from the dry run).
+- `~/bars` holds group catalogs 091–099, `snapdir_099`, offsets, and extracted stars for snapshots 91–99; `config/cluster.yaml` lists all
+  of them so 00_check_data reports each. With a ≈ 0.9 at snap 91 [memory], the a = 1 extraction issue (D10) is no longer negligible
+  for 91–97: decide the correction from the legacy `node_worker_stars.py` before running those snapshots.
+- No SubLink merger trees on disk (user, not yet listed by a command). Milestone 6 then needs per-subhalo API downloads (separate
+  approval) or a matching without trees; to plan when we get there.
+- Supplementary catalogues present: `supplementary_catalogs/{bar_properties,circularities,autogmm_decomp}.hdf5`,
+  `extra_data/{kinematic_decomposition_099,morphs_kinematic_bars,stellar_circs}.hdf5`; contents not yet listed. bar_properties may
+  allow a comparison with an independent bar sample (and choosing barred/unbarred sample galaxies).
+- Shared tooling: env file, row hook, fetch rule committed on `core-fixes-yield-archive` (d0759d1) after the user's OK; tests there:
+  row_bars.sh 19/19, test_fetch_rules.sh, test_pyenv.sh, test_row.sh, test_campaign_dirs.sh passed [verified, laptop].

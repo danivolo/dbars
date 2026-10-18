@@ -14,6 +14,7 @@ def test_cluster_includes_default(repo, monkeypatch):
     cfg = load_config(repo / "config/cluster.yaml")
     assert cfg["analysis"]["a2_threshold"] == 0.15
     assert cfg["paths"]["stars_npz"][99] == "/home/someone/bars/extracted_galaxies"
+    assert cfg["paths"]["stars_npz"][91] == "/home/someone/bars/extracted_galaxies_snap91"
 
 
 def test_env_expansion_and_default(repo, monkeypatch, tmp_path):
