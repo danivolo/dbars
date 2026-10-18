@@ -11,7 +11,7 @@ Format: choice — alternatives — reason — reference. Per-change entries: sy
 - Choice: `uv venv --python 3.12 ~/astro/envs/bars` + `uv pip install -e .[test]`, astroplot editable.
 - Alternatives: `astro pyenv` (needs `envs/bars.yml` on the shared branch: proposed, not merged); the `gizmo` env (no pip, no h5py/photutils).
 - Reason: brief, "Configuration and environment". Versions tested [verified, `uv pip install` output 2026-10-18]: numpy 2.5.4, scipy 1.18.1,
-  h5py 3.16.0, pandas 3.0.6, pyarrow 26.0.0, pyyaml 6.0.3, matplotlib 3.11.2, astropy 8.0.2, photutils 3.1.1, pytest 9.1.1.
+  h5py 3.16.0, pandas 3.0.6, pyarrow 25.0.0 (26.0.0 first; not on conda-forge, D15), pyyaml 6.0.3, matplotlib 3.11.2, astropy 8.0.2, photutils 3.1.1, pytest 9.1.1.
 
 ## D3. Config: include + `${VAR:-default}` (2026-10-18)
 - Choice: `include:` relative to the including file, deep merge, then `--set` overrides (values parsed as YAML), then `${VAR}`, `${VAR:-default}`, `~` expansion; unset `${VAR}` without default is an error.
@@ -100,3 +100,8 @@ Format: choice — alternatives — reason — reference. Per-change entries: sy
   allow a comparison with an independent bar sample (and choosing barred/unbarred sample galaxies).
 - Shared tooling: env file, row hook, fetch rule committed on `core-fixes-yield-archive` (d0759d1) after the user's OK; tests there:
   row_bars.sh 19/19, test_fetch_rules.sh, test_pyenv.sh, test_row.sh, test_campaign_dirs.sh passed [verified, laptop].
+
+## D15. pyarrow 25.0.0 (2026-10-18)
+- Symptom: `astro pyenv create bars` on the cluster: `PackagesNotFoundError: pyarrow=26.0.0` (conda-forge). Root cause: the laptop pins came
+  from PyPI (uv), where 26.0.0 exists; conda-forge's latest is 25.0.0 [verified: api.anaconda.org, 2026-10-18; all other pins present there].
+- Fix: pin 25.0.0 in envs/bars.yml and on the laptop (`uv pip install pyarrow==25.0.0`). pyarrow only does Parquet I/O, no effect on results.

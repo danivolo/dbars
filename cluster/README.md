@@ -29,7 +29,7 @@ If `astro pyenv` is not available there, by hand (same pins):
 ```bash
 module load miniforge3
 conda create -y -p ~/astro/envs/bars -c conda-forge python=3.12 pip numpy=2.5.4 scipy=1.18.1 h5py=3.16.0 pandas=3.0.6 \
-    pyarrow=26.0.0 pyyaml=6.0.3 matplotlib=3.11.2 astropy=8.0.2 photutils=3.1.1 pytest=9.1.1
+    pyarrow=25.0.0 pyyaml=6.0.3 matplotlib=3.11.2 astropy=8.0.2 photutils=3.1.1 pytest=9.1.1
 ~/astro/envs/bars/bin/pip install --no-deps -e ~/astro/clap/bars
 [ -d ~/astro/analysis/astroplot ] && ~/astro/envs/bars/bin/pip install --no-deps -e ~/astro/analysis/astroplot   # needed for step 04 only
 ```
