@@ -1,0 +1,9 @@
+# Cluster paths (layout from the user [memory]; 00_check_data.py confirms them). Loaded over default.yaml.
+include: default.yaml
+paths:
+  base: ~/bars/TNG50-1/output
+  offsets: ~/bars/TNG50-1/postprocessing/offsets
+  stars_npz:
+    99: ~/bars/extracted_galaxies
+    98: ~/bars/extracted_galaxies_snap98
+  outputs: ~/astro/runs/bars/manual          # only for runs by hand; jobs use $ASTRO_RUNDIR

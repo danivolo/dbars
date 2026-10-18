@@ -1,0 +1,12 @@
+# Laptop tests on synthetic galaxies. The test fixtures write the synthetic npz/catalog files
+# to $DBARS_SYNTH_DIR (pytest sets it to a tmp_path); outputs default to the scratch folder.
+include: default.yaml
+snapshots: [99]
+paths:
+  base: ${DBARS_SYNTH_DIR:-~/astro/scratch/bars/synthetic}/output
+  offsets: ${DBARS_SYNTH_DIR:-~/astro/scratch/bars/synthetic}/offsets
+  stars_npz:
+    99: ${DBARS_SYNTH_DIR:-~/astro/scratch/bars/synthetic}/stars_snap99
+  outputs: ~/astro/scratch/bars/local_test
+analysis:
+  n_bootstrap: 20

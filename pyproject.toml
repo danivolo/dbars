@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dbars"
+version = "0.1.0"
+description = "Candidate double-barred galaxies in TNG50-1: catalog selection, bar diagnostics, classification"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy",
+    "scipy",
+    "h5py",
+    "pandas",
+    "pyarrow",
+    "pyyaml",
+    "matplotlib",
+    "astropy",
+    "photutils",
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

@@ -1,0 +1,19 @@
+# data and outputs (never in git: rule 4)
+*.hdf5
+*.h5
+*.npz
+*.parquet
+outputs/
+data/
+logs/
+*.log
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+.venv/
+# notebooks
+.ipynb_checkpoints/

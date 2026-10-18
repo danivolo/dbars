@@ -1,0 +1,28 @@
+# Analysis parameters shared by every machine. Paths live in cluster.yaml / local_test.yaml.
+sim:
+  name: TNG50-1
+  h: 0.6774
+  box_ckpc_h: 35000.0
+  softening_phys_kpc: 0.288      # stellar softening, z <= 1
+  softening_comov_kpc: 0.575     # stellar softening, z > 1 (comoving)
+snapshots: [99, 98]              # 00_check_data.py reports which are complete; edit after its first run
+selection:
+  mstar_min: 1.0e10              # Msun
+  mstar_max: 3.0e11              # Msun, drops cluster centrals
+  centrals_only: false
+particles:
+  correct_scale_factor: false    # the extraction used a = 1; true applies pos*a/h, vel*sqrt(a) (see DECISIONS)
+analysis:
+  shrink_sphere_final_kpc: 0.5
+  j_radius_rhalf: 3.0            # face-on from stars within 3 r_half
+  rmin_kpc: 0.25
+  rmax_rhalf: 4.0
+  n_rbins: 40                    # log-spaced
+  min_particles_per_bin: 200
+  n_bootstrap: 100
+  a2_threshold: 0.15
+  phase_tol_deg: 10.0
+  map_pixel_kpc: 0.1
+run:
+  workers: 1                     # processes inside one task; on the cluster parallelism comes from the task file
+  seed: 12345                    # bootstrap seed (per galaxy: seed + sid)
