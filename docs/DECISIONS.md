@@ -105,3 +105,17 @@ Format: choice — alternatives — reason — reference. Per-change entries: sy
 - Symptom: `astro pyenv create bars` on the cluster: `PackagesNotFoundError: pyarrow=26.0.0` (conda-forge). Root cause: the laptop pins came
   from PyPI (uv), where 26.0.0 exists; conda-forge's latest is 25.0.0 [verified: api.anaconda.org, 2026-10-18; all other pins present there].
 - Fix: pin 25.0.0 in envs/bars.yml and on the laptop (`uv pip install pyarrow==25.0.0`). pyarrow only does Parquet I/O, no effect on results.
+
+## D16. Data on the cluster per snapshot (00_check_data, 2026-10-19) [verified: the user's pasted output]
+| snap | z | catalog chunks | npz / expected (M* >= 1e10) |
+|---|---|---|---|
+| 99 | 0.0000 | 680/680 | 901/903 (missing sid 0 and 220595) |
+| 98 | 0.0095 | 680/680 | 675/911 (236 missing: extraction incomplete) |
+| 97-94 | 0.024-0.059 | 680/680 | 0 (folders exist; naming or content not yet listed) |
+| 93-91 | — | chunk 0 missing | 0 |
+- sid 0 is the central of the most massive halo, above `mstar_max` in any case [memory]; whether 220595 is in the window: step 01 tells.
+- Supplementary: `supplementary_catalogs/{autogmm_decomp,bar_properties}.hdf5` are not HDF5 ("file signature not found": probably failed
+  downloads); `circularities.hdf5` / `extra_data/stellar_circs.hdf5` are the TNG circularity catalogue; `extra_data/morphs_kinematic_bars.hdf5`
+  is the TNG50 MORDOR kinematic-morphology + bar catalogue (Zana et al. 2022; per snapshot: Barred, BarSize (2,N), BarStrength (2,N),
+  SubhaloID ...): an independent bar classification to compare with in milestone 5, once the meaning of the two rows is read in the paper.
+- Plan: run snap 99 (complete) first; snap 98 on the 675 extracted galaxies (make_tasks uses only galaxies with an npz), flagged as partial.
