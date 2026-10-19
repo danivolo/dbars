@@ -11,7 +11,7 @@ selection:
   mstar_max: 3.0e11              # Msun, drops cluster centrals
   centrals_only: false
 particles:
-  correct_scale_factor: false    # the extraction used a = 1; true applies pos*a/h, vel*sqrt(a) (see DECISIONS)
+  correct_scale_factor: true     # the extraction stored Coordinates/h and raw Velocities: x a and x sqrt(a) give physical (D10)
 analysis:
   shrink_sphere_final_kpc: 0.5
   j_radius_rhalf: 3.0            # face-on from stars within 3 r_half

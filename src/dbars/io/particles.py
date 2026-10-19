@@ -1,14 +1,14 @@
 """Reader for the extracted star particles (one ``subhalo_<SID>_stars.npz`` per galaxy).
 
-npz layout (earlier extraction pipeline, [memory: from the user; to be checked against the legacy scripts]):
+npz layout (legacy `node_worker_stars.py` [verified: read in the script, 2026-10-19]):
 ``pos`` (N, 3) physical kpc, ``vel`` (N, 3) km/s, ``mass`` Msun, ``a_form`` (formation scale factor; <= 0 marks
 wind particles), ``metallicity``, ``com_offset`` [kpc], ``cat_pos``. Positions are centred on the mass-weighted
 centre of the stars within 5 kpc, velocities on the mass-weighted mean of all stars.
 
-Scale factor: the extraction converted units with a = 1. NOTE: assumed here that it applied pos_ckpc_h / h and
-vel_raw * 1, so the exact physical values are pos * a and vel * sqrt(a) (TNG particle velocities are stored as
-km/s / sqrt(a)). This is right only if that assumption holds; check the legacy extraction script before enabling
-``particles.correct_scale_factor``. At snap 98 (a ~ 0.99) the change is ~1 % in R, ~0.5 % in v, ~0.5 % in Omega.
+Scale factor: the extraction (legacy ``node_worker_stars.py``) stored ``Coordinates / h`` and the raw ``Velocities``
+[verified: read in the script, 2026-10-19], so the physical values are pos * a [kpc] and vel * sqrt(a) [km/s]
+(TNG stores particle velocities as km/s / sqrt(a)). ``particles.correct_scale_factor`` (default true) applies this;
+no-op at snap 99. At snap 98 (a = 0.9906) the change is ~1 % in R, ~0.5 % in v, ~0.5 % in Omega.
 """
 
 from __future__ import annotations

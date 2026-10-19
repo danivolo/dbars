@@ -127,3 +127,32 @@ Format: choice — alternatives — reason — reference. Per-change entries: sy
   state the index mapping, to check in arXiv:2206.04693]. Their Barred flag includes R_Phi >= 2.8 softenings and kinematic cuts, so it
   is a single-bar classification: agreement is expected for our outer bars, not for inner ones.
 - `snapshots: [99, 98]` in cluster.yaml: 97-91 have no npz and 93-91 no catalogues (empty folders).
+
+## D18. Legacy scripts read (2026-10-19): what was kept, what replaced [verified: ~/astro/scratch/bars/legacy, copied from cluster ~/bars]
+- Extraction (`node_worker_stars.py`, illustris_python + offsets): pos = Coordinates/h (comoving, no a), vel = raw Velocities (no sqrt(a)),
+  mass x 1e10/h, a_form = GFM_StellarFormationTime (wind <= 0 kept), selection SubhaloMassType[4] > 1e10 Msun; periodic wrap around
+  SubhaloPos/h, centre = mass-weighted COM of stars within 5 kpc, velocities minus the mass-weighted mean of all stars.
+  -> D10 resolved: `particles.correct_scale_factor: true` (pos x a, vel x sqrt(a)); our 00/01 M* cut is the same quantity.
+  Galaxies whose particles span star chunks of two batches were skipped by a batch: a likely cause of the missing sids.
+- Bar detection (`03_global_bar_population_scan.py`, `02_plot_halo_diagnostics_mp.py`): face-on from L of stars within 5 kpc (fixed radius),
+  linear radial bins to 10 kpc, A2/A0 local maxima > 0.2, "double" = two maxima with dphi > 12 deg and a dip < 0.85 x the smaller peak.
+  Replaced: shrinking-sphere centre, L within 3 r_half, log bins to 4 r_half with bootstrap errors, phase-plateau segments, single-snapshot
+  Omega_p, isophote check, softening units. Kept as ideas: the dip criterion (we split on phase or A2 drop), the threshold scan figure.
+- `cross_validate_bars.py`: agreement with Zana+22 `Barred` -> now the zana_* columns of 03_classify.
+- Note for the user: the legacy worker contains a TNG API key in plain text (cluster ~/bars and the laptop scratch copy); never committed here.
+
+## D19. Check on 5 real snap-99 galaxies (2026-10-19, laptop) [verified: ~/astro/runs/bars/samples_check, script scratch/bars/dev/samples_check.py]
+Picked on the cluster from the step-01 table: 3 Zana+22 barred, 2 unbarred discs (k_rot > 0.6), < 4e5 star particles each.
+| sid | N* | r_half [kpc] | centre shift [pc] | label | bar end [kpc] | Omega_p [km/s/kpc] | ellipse |
+|---|---|---|---|---|---|---|---|
+| 20 | 318k | 3.96 | 107 | single | 5.06 | 13.9 +- 0.6 | agrees |
+| 460725 | 232k | 1.79 | 37 | single | 2.04 | 51.2 +- 1.1 | agrees |
+| 585517 | 239k | 1.48 | 17 | single | 2.30 | 32.0 +- 0.9 | agrees |
+| 313695 | 285k | 5.64 | 181 | unbarred | — | — | — |
+| 633437 | 212k | 2.26 | 36 | unbarred | — | — | one PA run 0.2-2.0 kpc |
+- Labels match the intended Zana barred/unbarred split [assumed from the pick order; the user's table was not pasted].
+- 633437: a weak oval, A2 peak ~0.155 just above the 0.15 threshold over too few bins; the ellipse fit sees it. A borderline case for the
+  milestone-5 threshold tuning.
+- Re-centring moves the centre by 17-181 pc: the 5 kpc COM of the extraction is indeed too coarse for inner bars (brief).
+- ~30 s CPU per galaxy at 2-3e5 particles with 100 bootstraps and the ellipse fit. No wind particles in these five files.
+- Figure fixes: m=2 colour scale from the inner half of the map; wider panels so colour-bar labels do not touch the next panel.

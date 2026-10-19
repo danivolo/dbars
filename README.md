@@ -52,12 +52,12 @@ $PY scripts/02_galaxy_diagnostics.py $C --snap 99 --chunk 1/1 && $PY scripts/03_
 ## Open NOTEs (to check, not silently assumed)
 - Catalog layout `groups_<SNAP:03d>/fof_subhalo_tab_<SNAP:03d>.<i>.hdf5`, offsets `offsets_<SNAP:03d>.hdf5` (TNG convention [memory]); 00_check_data confirms.
 - Units in `dbars.io.catalogs.UNITS` from the TNG documentation [memory]; unknown fields raise instead of guessing.
-- npz scale factor: assumed the extraction did pos/h with a = 1 (`docs/DECISIONS.md` D10); `particles.correct_scale_factor` off until the legacy script is read.
+- npz scale factor: resolved from the legacy extraction script (D10, D18); correction on by default.
 - M* of the extraction cut vs `SubhaloMassType[4]`: 00_check_data compares the two sets.
 
 ## Status per milestone
 - [x] 1. Skeleton: repo, pyproject, config loading, docs, pytest
-- [x] 2. Library and synthetic tests (legacy scripts and the sample galaxies still to read/check: need the user's rsync, `cluster/README.md` §7)
+- [x] 2. Library and synthetic tests; legacy scripts read (D18); reader and full chain checked on 5 real snap-99 galaxies (D19)
 - [x] 3. Scripts and cluster files (shared-tooling files committed on core-fixes-yield-archive d0759d1)
 - [ ] 4. Cluster dry run (user)
 - [ ] 5. Full snap 99 and 98

@@ -28,7 +28,10 @@ def _img(ax, m, ext, cmap, log=False, sym=False, label=""):
         label = f"log {label}"
     kw = {}
     if sym:
-        v = np.nanpercentile(np.abs(m), 98) if np.isfinite(m).any() else 1.0
+        # colour scale from the inner half of the map: the outer rings of the m=2 map are noise-dominated
+        ny, nx = m.shape
+        inner = m[ny // 4: 3 * ny // 4, nx // 4: 3 * nx // 4]
+        v = np.nanpercentile(np.abs(inner), 98) if np.isfinite(inner).any() else 1.0
         kw = dict(vmin=-v, vmax=v)
     im = ax.imshow(m, origin="lower", extent=ext, cmap=cmap, interpolation="nearest", **kw)
     cb = ax.figure.colorbar(im, ax=ax, fraction=0.046, pad=0.02)
@@ -64,7 +67,7 @@ def _shade(ax, cls):
 
 def diagnostic_figure(res: dict, title: str = ""):
     """3x3 figure from a profile-file dict (:func:`dbars.io.profiles.read_result`). Returns the figure."""
-    fig, ax = fig_grid(3, 3, panel=(5.2, 4.4))
+    fig, ax = fig_grid(3, 3, panel=(5.8, 4.4))
     mp, cls, prof = res["maps"], res["classification"], res["profile"]
     runs = res.get("ellipse_runs")
 
@@ -136,5 +139,5 @@ def diagnostic_figure(res: dict, title: str = ""):
         txt += (f"  ratio={cls['length_ratio']:.2f}  dphi={cls['misalignment_deg']:.0f} deg"
                 f"  L_in={cls['inner_len_soft']:.1f} eps_soft")
     fig.text(0.01, 0.995, txt, va="top", ha="left")
-    fig.tight_layout(rect=(0, 0, 1, 0.98))
+    fig.tight_layout(rect=(0, 0, 1, 0.98), w_pad=2.0)
     return fig
