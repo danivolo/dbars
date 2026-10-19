@@ -174,6 +174,6 @@ $PY scripts/fetch_cutouts.py --config config/cluster.yaml --snap 98
 # 3) rebuild the table: expect "878 with npz"
 $PY scripts/01_catalog_table.py --config config/cluster.yaml --snap 98
 ```
-Expected: `snap 98 (a = 0.99055): 215 galaxies to fetch`, progress lines every 20 galaxies with an ETA, last line `done 215/215 failed 0`
+Expected: `snap 98 (a = 0.9906...): 215 galaxies to fetch`, progress lines every 20 galaxies with an ETA, last line `done 215/215 failed 0`
 (exit status 1 if any failed: rerun the same command). In the check, the keys include `particle_ids`, `units` is `physical`, and |pos|
 stays within a few tens of kpc. Later, for ParticleIDs everywhere: the same command with `--all` (and `--snap 99`, 97 ... 94).
