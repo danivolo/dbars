@@ -21,6 +21,7 @@ GRP_FIELDS = ("GroupFirstSub", "Group_M_Crit200")
 
 
 def build_table(cat: dict, cfg: dict, snap: int, npz_dir=None) -> pd.DataFrame:
+    """``npz_dir``: one directory or a list searched in order (see :func:`dbars.io.particles.npz_dirs`)."""
     """Selection table from a catalog dict of :func:`dbars.io.catalogs.read_catalog` (fields above)."""
     h = float(cat["header"].get("HubbleParam", cfg["sim"]["h"]))
     a = float(cat["header"]["a"])
@@ -47,10 +48,13 @@ def build_table(cat: dict, cfg: dict, snap: int, npz_dir=None) -> pd.DataFrame:
         n_star=np.asarray(S["SubhaloLenType"])[idx, 4].astype(np.int64),
     ))
     df.insert(0, "snap", int(snap))
-    paths = []
-    for sid in df["sid"]:
-        p = Path(npz_dir) / f"subhalo_{int(sid)}_stars.npz" if npz_dir else None
-        paths.append(str(p) if p is not None and p.exists() else "")
+    dirs = [] if not npz_dir else ([Path(npz_dir)] if isinstance(npz_dir, (str, Path)) else [Path(d) for d in npz_dir])
+    have = {}
+    for d in reversed(dirs):                     # earlier directories win
+        if d.is_dir():
+            for p in d.glob("subhalo_*_stars.npz"):
+                have[p.name] = str(p)
+    paths = [have.get(f"subhalo_{int(sid)}_stars.npz", "") for sid in df["sid"]]
     df["npz_path"] = paths
     df["has_npz"] = df["npz_path"] != ""
     return df.reset_index(drop=True)
@@ -59,8 +63,8 @@ def build_table(cat: dict, cfg: dict, snap: int, npz_dir=None) -> pd.DataFrame:
 def load_table(cfg: dict, snap: int) -> pd.DataFrame:
     """Read the catalogs through the config and build the table."""
     cat = catalogs.read_catalog(cfg["paths"]["base"], snap, SUB_FIELDS, GRP_FIELDS)
-    npz_dir = cfg["paths"].get("stars_npz", {}).get(int(snap))
-    return build_table(cat, cfg, snap, npz_dir)
+    from .io.particles import npz_dirs
+    return build_table(cat, cfg, snap, npz_dirs(cfg, snap))
 
 
 def ordered_sids(df: pd.DataFrame, require_npz: bool = True):

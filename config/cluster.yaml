@@ -5,7 +5,8 @@ snapshots: [99, 98]          # 97-91: empty folders on the cluster (00_check_dat
 paths:
   base: ~/bars/TNG50-1/output
   offsets: ~/bars/TNG50-1/postprocessing/offsets
-  stars_npz:
+  cutouts: ~/astro/data/bars/stars_snap{snap}   # star cutouts from scripts/fetch_cutouts.py (searched first; ~/bars stays read-only)
+  stars_npz:                                      # legacy extraction (searched second)
     99: ~/bars/extracted_galaxies
     98: ~/bars/extracted_galaxies_snap98
     97: ~/bars/extracted_galaxies_snap97

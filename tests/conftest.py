@@ -79,6 +79,7 @@ def write_fake_catalog(root: Path, snap: int, galaxies: dict, a: float = 1.0, n_
             s["SubhaloSFR"] = np.full(len(si), 1.0)
             s["SubhaloGrNr"] = grnr[si]
             s["SubhaloBHMass"] = np.full(len(si), 1e8 * H / 1e10)
+            s["SubhaloPos"] = np.tile([100.0, 200.0, 300.0], (len(si), 1)) + si[:, None]
             g = f.create_group("Group")
             g["GroupFirstSub"] = first[gi]
             g["Group_M_Crit200"] = m200[gi]

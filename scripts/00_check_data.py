@@ -12,7 +12,7 @@ from pathlib import Path
 import numpy as np
 
 from dbars.cli import base_parser, setup
-from dbars.io import catalogs
+from dbars.io import catalogs, particles
 from dbars.runio import atomic_write_text
 
 
@@ -30,15 +30,18 @@ def check_snap(cfg, snap):
     op = catalogs.offsets_path(offd, snap)
     rep["offsets_file"] = str(op)
     rep["offsets_exists"] = op.exists()
-    npz_dir = cfg["paths"].get("stars_npz", {}).get(int(snap))
-    rep["npz_dir"] = str(npz_dir) if npz_dir else None
+    dirs = particles.npz_dirs(cfg, snap)
+    rep["npz_dirs"] = [str(d) for d in dirs]
     have = set()
-    if npz_dir and Path(npz_dir).is_dir():
-        for p in Path(npz_dir).glob("subhalo_*_stars.npz"):
-            try:
-                have.add(int(p.name.split("_")[1]))
-            except ValueError:
-                pass
+    for d in dirs:
+        n0 = len(have)
+        if d.is_dir():
+            for p in d.glob("subhalo_*_stars.npz"):
+                try:
+                    have.add(int(p.name.split("_")[1]))
+                except ValueError:
+                    pass
+        rep[f"npz_new_in_{d.name}"] = len(have) - n0
     rep["npz_count"] = len(have)
     if missing == []:
         cat = catalogs.read_catalog(base, snap, ("SubhaloMassType",))

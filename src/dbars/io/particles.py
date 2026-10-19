@@ -23,9 +23,29 @@ _WARNED: set = set()
 KEYS = ("pos", "vel", "mass", "a_form", "metallicity")
 
 
+def npz_dirs(cfg: dict, snap: int) -> list:
+    """Directories searched for the npz files of ``snap``, in order: ``paths.cutouts`` (template with ``{snap}``;
+    downloaded star cutouts, physical units, with ParticleIDs), then ``paths.stars_npz[snap]`` (legacy extraction)."""
+    p = cfg.get("paths", {})
+    out = []
+    if p.get("cutouts"):
+        out.append(Path(str(p["cutouts"]).format(snap=int(snap))))
+    legacy = p.get("stars_npz", {}).get(int(snap))
+    if legacy:
+        out.append(Path(legacy))
+    return out
+
+
 def npz_path(cfg: dict, snap: int, sid: int) -> Path:
-    """Path of the npz of subhalo ``sid`` at ``snap`` from ``paths.stars_npz`` (KeyError if the snapshot is absent)."""
-    return Path(cfg["paths"]["stars_npz"][int(snap)]) / f"subhalo_{int(sid)}_stars.npz"
+    """Path of the npz of ``sid`` at ``snap``: the first of :func:`npz_dirs` that has it (else the first candidate)."""
+    name = f"subhalo_{int(sid)}_stars.npz"
+    dirs = npz_dirs(cfg, snap)
+    if not dirs:
+        raise KeyError(f"no npz directory configured for snap {snap}")
+    for d in dirs:
+        if (d / name).exists():
+            return d / name
+    return dirs[0] / name
 
 
 def clean(data: dict) -> dict:
@@ -36,6 +56,8 @@ def clean(data: dict) -> dict:
         keep &= np.all(np.isfinite(np.asarray(data[k], float)), axis=1)
     keep &= np.isfinite(np.asarray(data["mass"], float)) & (np.asarray(data["mass"], float) > 0)
     out = {k: np.asarray(data[k], np.float64)[keep] for k in KEYS if k in data}
+    if "particle_ids" in data:
+        out["particle_ids"] = np.asarray(data["particle_ids"])[keep]
     out["n_wind"] = int((a_form <= 0).sum())
     out["n_dropped"] = int((~keep).sum())
     for k in ("com_offset", "cat_pos"):
@@ -48,7 +70,8 @@ def load_stars_file(path, snap: int, sid: int, a: float | None = None, correct_s
     """Read and clean one npz file. ``a``: scale factor of ``snap`` (from the group-catalog header).
 
     Returns a dict with pos [kpc], vel [km/s], mass [Msun], a_form, metallicity (wind dropped, float64),
-    com_offset, cat_pos, snap, sid, a, n_wind, n_dropped and ``scale_factor_corrected`` (bool).
+    particle_ids (cutout files only), com_offset, cat_pos, snap, sid, a, n_wind, n_dropped, ``source``
+    ('legacy' or 'cutout') and ``scale_factor_corrected`` (True also for cutout files, converted at download).
     Warns once per snapshot when a != 1 (the extraction assumed a = 1).
     """
     with np.load(path) as f:
@@ -57,8 +80,9 @@ def load_stars_file(path, snap: int, sid: int, a: float | None = None, correct_s
     if missing:
         raise KeyError(f"{path}: missing {missing}")
     out = clean(data)
-    out.update(snap=int(snap), sid=int(sid), a=a, scale_factor_corrected=False)
-    if a is not None and abs(a - 1.0) > 1e-6:
+    physical = "units" in data and str(data["units"]) == "physical"     # cutout files: already converted
+    out.update(snap=int(snap), sid=int(sid), a=a, scale_factor_corrected=physical, source="cutout" if physical else "legacy")
+    if a is not None and abs(a - 1.0) > 1e-6 and not physical:
         if snap not in _WARNED:
             _WARNED.add(snap)
             log.warning("snap %d: a = %.5f but the extraction used a = 1 (%s)", snap, a,

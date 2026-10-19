@@ -156,3 +156,24 @@ I pick the five SIDs from the step-01 table (barred and unbarred by the TNG50 ba
 - the template's `source activate gizmo_build` with the env's python used by absolute path (it should not matter) [not verified];
 - `--mem 64` together with the template's `#SBATCH --cpus-per-task=20` [not verified; ALIGN.md 5];
 - the stop-file latency over NFS (~20 s measured for a toy job, RESTARTABLE.md 5): a task finishes its current galaxy first.
+
+## 8. Star cutouts from the TNG API (login node, in tmux)
+Missing galaxies (snap 98: 215 of 878 in the mass window) and, later, ParticleIDs for all. Files go to `~/astro/data/bars/stars_snap<S>/`
+(`paths.cutouts`); `~/bars` is not touched. The key is read from the environment only:
+```bash
+tmux new -s bars-fetch
+cd ~/astro/clap/bars && git pull && df -h ~
+read -rs TNG_API_KEY && export TNG_API_KEY            # paste the key (not echoed, not in the history)
+export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 PY=~/astro/envs/bars/bin/python
+# 1) two galaxies first, to check the real cutout format (fails loudly on a missing field)
+$PY scripts/fetch_cutouts.py --config config/cluster.yaml --snap 98 --max-galaxies 2
+tail -3 ~/astro/data/bars/stars_snap98/fetch_snap98.log
+$PY -c "import numpy as np, glob; f=sorted(glob.glob('$HOME/astro/data/bars/stars_snap98/*.npz'))[0]; d=np.load(f); print(f, {k: d[k].shape for k in d.files}, float(d['a']), str(d['units']), np.abs(d['pos']).max(axis=0))"
+# 2) the rest of the missing snap-98 galaxies (resumes where it stopped; rerun after a failure)
+$PY scripts/fetch_cutouts.py --config config/cluster.yaml --snap 98
+# 3) rebuild the table: expect "878 with npz"
+$PY scripts/01_catalog_table.py --config config/cluster.yaml --snap 98
+```
+Expected: `snap 98 (a = 0.99055): 215 galaxies to fetch`, progress lines every 20 galaxies with an ETA, last line `done 215/215 failed 0`
+(exit status 1 if any failed: rerun the same command). In the check, the keys include `particle_ids`, `units` is `physical`, and |pos|
+stays within a few tens of kpc. Later, for ParticleIDs everywhere: the same command with `--all` (and `--snap 99`, 97 ... 94).

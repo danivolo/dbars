@@ -156,3 +156,15 @@ Picked on the cluster from the step-01 table: 3 Zana+22 barred, 2 unbarred discs
 - Re-centring moves the centre by 17-181 pc: the 5 kpc COM of the extraction is indeed too coarse for inner bars (brief).
 - ~30 s CPU per galaxy at 2-3e5 particles with 100 bootstraps and the ellipse fit. No wind particles in these five files.
 - Figure fixes: m=2 colour scale from the inner half of the map; wider panels so colour-bar labels do not touch the next panel.
+
+## D20. New extraction: star-only API cutouts (2026-10-19)
+- Choice: `scripts/fetch_cutouts.py` (user runs it on the login node, in tmux) downloads `.../snapshots/S/subhalos/SID/cutout.hdf5?stars=
+  Coordinates,Velocities,Masses,GFM_StellarFormationTime,GFM_Metallicity,ParticleIDs`, converts to physical units (wrap around SubhaloPos,
+  x a/h, vel x sqrt(a), mass x 1e10/h), centres like the legacy extraction, and writes `subhalo_<SID>_stars.npz` with `particle_ids`, a, h,
+  `units="physical"` atomically to `paths.cutouts` (`~/astro/data/bars/stars_snap{snap}`); finished galaxies are skipped; key from `$TNG_API_KEY`.
+- The reader searches `paths.cutouts` first, then the legacy `paths.stars_npz`; a `units="physical"` file is not scale-corrected again.
+- Alternatives: whole snapshot chunks (legacy worker: all particle types, most of the volume wasted); writing into `~/bars` (read-only for this
+  project by the brief).
+- Why ParticleIDs: cross-snapshot matching (milestone 6) by shared star particles instead of merger trees, while only nearby snapshots are used.
+- Cutout layout and units are [memory: TNG API docs]; `convert_cutout` fails on a missing field, and the first real download is checked by hand
+  (`cluster/README.md` §8). Tests: `tests/test_cutouts.py` (fake cutouts across the box edge, no double correction, resume, preference order).

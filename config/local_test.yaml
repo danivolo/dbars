@@ -5,6 +5,7 @@ snapshots: [99]
 paths:
   base: ${DBARS_SYNTH_DIR:-~/astro/scratch/bars/synthetic}/output
   offsets: ${DBARS_SYNTH_DIR:-~/astro/scratch/bars/synthetic}/offsets
+  cutouts: ${DBARS_SYNTH_DIR:-~/astro/scratch/bars/synthetic}/cutouts_snap{snap}
   stars_npz:
     99: ${DBARS_SYNTH_DIR:-~/astro/scratch/bars/synthetic}/stars_snap99
   outputs: ~/astro/scratch/bars/local_test
