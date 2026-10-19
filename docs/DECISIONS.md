@@ -168,3 +168,6 @@ Picked on the cluster from the step-01 table: 3 Zana+22 barred, 2 unbarred discs
 - Why ParticleIDs: cross-snapshot matching (milestone 6) by shared star particles instead of merger trees, while only nearby snapshots are used.
 - Cutout layout and units are [memory: TNG API docs]; `convert_cutout` fails on a missing field, and the first real download is checked by hand
   (`cluster/README.md` §8). Tests: `tests/test_cutouts.py` (fake cutouts across the box edge, no double correction, resume, preference order).
+- 2026-10-19, first real cutouts [verified: user's output]: format as expected (all six fields, a = 0.99057 at snap 98, units physical);
+  the two largest missing snap-98 galaxies have ~5e6 stars, 300+ MB at float64 (~63 B/star), 2.5-3.5 min each. Arrays now stored as
+  float32 (TNG's own precision), ~40 B/star; the two float64 files stay valid (the reader converts to float64 anyway).

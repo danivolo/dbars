@@ -35,9 +35,10 @@ def test_convert_wraps_and_converts(tmp_path):
     out = convert_cutout(tmp_path / "c.hdf5", sub_pos, a, H, BOX)
     assert np.abs(out["pos"]).max() < 40.0                   # wrapped: no 35 Mpc jumps
     keep = d["a_form"] > 0
-    assert np.allclose(out["mass"], d["mass"])
+    assert np.allclose(out["mass"], d["mass"], rtol=1e-6)
     # physical positions equal the generator's up to the centring shift
-    assert np.allclose(out["pos"] + out["com_offset"], d["pos"], atol=1e-6)
+    assert np.allclose(out["pos"] + out["com_offset"], d["pos"], atol=1e-4)
+    assert out["pos"].dtype == np.float32
     assert np.allclose((out["vel"] * out["mass"][:, None]).sum(0), 0, atol=1e-3 * out["mass"].sum())
     assert np.linalg.norm(out["com_offset"]) < 0.5 and str(out["units"]) == "physical"
     assert out["particle_ids"].dtype == np.uint64 and keep.sum() < len(keep)

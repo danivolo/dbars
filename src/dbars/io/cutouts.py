@@ -6,7 +6,8 @@ Cutout file [memory: TNG API docs; checked on the first download by :func:`conve
 GFM_Metallicity, ParticleIDs}``, absolute box coordinates.
 
 Conversion (a, h from the group-catalog header of the snapshot):
-pos = wrap(Coordinates - SubhaloPos) * a / h  [physical kpc], vel = Velocities * sqrt(a) [km/s], mass = Masses * 1e10 / h [Msun].
+pos = wrap(Coordinates - SubhaloPos) * a / h  [physical kpc], vel = Velocities * sqrt(a) [km/s], mass = Masses * 1e10 / h [Msun],
+computed in float64 and stored as float32 (the precision of the snapshot itself; ~40 bytes per star compressed).
 Then, as the legacy extraction did: centre on the mass-weighted centre of the stars within 5 kpc, subtract the
 mass-weighted mean velocity of all stars. The npz gets ``units = "physical"`` so the reader applies no further
 scale-factor correction (the legacy files lack the key and are corrected, D10).
@@ -49,8 +50,10 @@ def convert_cutout(path, sub_pos_ckpc_h, a: float, h: float, box_ckpc_h: float, 
     com = (pos[sel] * mass[sel, None]).sum(0) / mass[sel].sum()
     pos -= com
     vel -= (vel * mass[:, None]).sum(0) / mass.sum()
-    return dict(pos=pos, vel=vel, mass=mass, a_form=np.asarray(raw["GFM_StellarFormationTime"], np.float64),
-                metallicity=np.asarray(raw["GFM_Metallicity"], np.float64),
+    f32 = np.float32   # TNG stores these as float32: float64 on disk only doubles the volume (centring done in float64)
+    return dict(pos=pos.astype(f32), vel=vel.astype(f32), mass=mass.astype(f32),
+                a_form=np.asarray(raw["GFM_StellarFormationTime"], f32),
+                metallicity=np.asarray(raw["GFM_Metallicity"], f32),
                 particle_ids=np.asarray(raw["ParticleIDs"], np.uint64), com_offset=com,
                 cat_pos=np.asarray(sub_pos_ckpc_h, np.float64) * a / h, a=np.float64(a), h=np.float64(h),
                 units=np.array("physical"))
