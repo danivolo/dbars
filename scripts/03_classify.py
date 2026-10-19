@@ -3,7 +3,7 @@
 re-tuned with --set without touching particles).
 
 Writes <out>/classification_snap<SNAP>.parquet: one row per galaxy with the label, bar parameters and, when the
-catalog table is available (<out>/catalog/snap<SNAP>.parquet or --table), the catalog columns.
+catalog table is available (<out>/catalog/snap<SNAP>.parquet or --table), the catalog columns, and the Zana et al. (2022) bar catalogue columns (zana_*) when ``paths.zana_bars`` exists.
 Usage: python scripts/03_classify.py --config config/cluster.yaml --snap 99 [--profiles DIR] [--set classify.omega_nsigma=5]
 """
 import os
@@ -15,6 +15,7 @@ import pandas as pd
 from dbars.classify import classify_profiles
 from dbars.cli import base_parser, setup
 from dbars.io.profiles import read_result
+from dbars.io.supplementary import read_zana_bars
 
 FLAT = ("label", "n_segments", "outer_r_start", "outer_r_end", "outer_a2_peak", "outer_phi2_deg", "outer_omega",
         "outer_omega_err", "inner_r_start", "inner_r_end", "inner_a2_peak", "inner_phi2_deg", "inner_omega",
@@ -52,6 +53,12 @@ def main(argv=None):
     if len(df) and table.exists():
         cat = pd.read_parquet(table).drop(columns=["snap"], errors="ignore")
         df = df.merge(cat, on="sid", how="left")
+    zp = cfg.get("paths", {}).get("zana_bars")
+    if len(df) and zp and Path(zp).exists():
+        try:
+            df = df.merge(read_zana_bars(zp, args.snap), on="sid", how="left")
+        except KeyError:
+            print(f"no Snapshot_{args.snap} in {zp}", file=sys.stderr)
     out = root / f"classification_snap{args.snap}.parquet"
     tmp = out.with_name(f".{out.name}.tmp{os.getpid()}")
     out.parent.mkdir(parents=True, exist_ok=True)

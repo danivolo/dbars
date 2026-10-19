@@ -119,3 +119,11 @@ Format: choice — alternatives — reason — reference. Per-change entries: sy
   is the TNG50 MORDOR kinematic-morphology + bar catalogue (Zana et al. 2022; per snapshot: Barred, BarSize (2,N), BarStrength (2,N),
   SubhaloID ...): an independent bar classification to compare with in milestone 5, once the meaning of the two rows is read in the paper.
 - Plan: run snap 99 (complete) first; snap 98 on the 675 extracted galaxies (make_tasks uses only galaxies with an npz), flagged as partial.
+
+## D17. Zana et al. (2022) bars as the independent comparison (2026-10-19)
+- `extra_data/morphs_kinematic_bars.hdf5` (MORDOR; snap 99: 4091 subhaloes, 770 Barred [verified: user's output]) is merged into
+  `classification_snap<S>.parquet` as `zana_*` columns by 03_classify (`paths.zana_bars`). Rows: BarSize = (R_Phi, R_peak) kpc,
+  BarStrength = (A2max(R), A2max(<R)) — order as listed on the TNG specifications page, section (t) [verified there; the page does not
+  state the index mapping, to check in arXiv:2206.04693]. Their Barred flag includes R_Phi >= 2.8 softenings and kinematic cuts, so it
+  is a single-bar classification: agreement is expected for our outer bars, not for inner ones.
+- `snapshots: [99, 98]` in cluster.yaml: 97-91 have no npz and 93-91 no catalogues (empty folders).

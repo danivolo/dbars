@@ -1,7 +1,7 @@
 # Cluster paths (layout listed by the user on 2026-10-18: ~/bars has groups_091..099 and extracted_galaxies[_snapNN] for
 # 91..99; 00_check_data.py confirms completeness). Loaded over default.yaml.
 include: default.yaml
-snapshots: [99, 98, 97, 96, 95, 94, 93, 92, 91]   # 00_check_data.py reports all; the analysis runs 99 and 98 first
+snapshots: [99, 98]          # 97-91: empty folders on the cluster (00_check_data, 2026-10-19; DECISIONS D16)
 paths:
   base: ~/bars/TNG50-1/output
   offsets: ~/bars/TNG50-1/postprocessing/offsets
@@ -15,5 +15,5 @@ paths:
     93: ~/bars/extracted_galaxies_snap93
     92: ~/bars/extracted_galaxies_snap92
     91: ~/bars/extracted_galaxies_snap91
-  supplementary: ~/bars/TNG50-1/supplementary_catalogs   # bar_properties.hdf5, circularities.hdf5, autogmm_decomp.hdf5 (contents not yet listed)
+  zana_bars: ~/bars/extra_data/morphs_kinematic_bars.hdf5   # Zana et al. 2022 bar catalogue, merged by 03_classify.py
   outputs: ~/astro/runs/bars/manual          # only for runs by hand; jobs use $ASTRO_RUNDIR
