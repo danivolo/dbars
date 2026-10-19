@@ -44,12 +44,12 @@ def fetch(url, dest, key, retries=6, timeout=300):
     raise RuntimeError(f"download failed: {last}")
 
 
-def one(sid, snap, cfg, key, outdir, sub_pos, a, h):
+def one(sid, snap, cfg, key, outdir, sub_pos, a, h, timeout=300):
     out = outdir / f"subhalo_{sid}_stars.npz"
     raw = outdir / ".download" / f"cutout_{snap}_{sid}.hdf5"
     raw.parent.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
-    fetch(cutout_url(cfg["sim"]["name"], snap, sid), raw, key)
+    fetch(cutout_url(cfg["sim"]["name"], snap, sid), raw, key, timeout=timeout)
     data = convert_cutout(raw, sub_pos[sid], a, h, float(cfg["sim"]["box_ckpc_h"]))
     write_npz_atomic(out, data)
     raw.unlink()
@@ -62,6 +62,7 @@ def main(argv=None):
     p.add_argument("--sids", default=None, help="comma-separated subhalo ids instead of the table")
     p.add_argument("--workers", type=int, default=4, help="parallel downloads")
     p.add_argument("--max-galaxies", type=int, default=None)
+    p.add_argument("--timeout", type=float, default=300.0, help="socket timeout [s] per read (large cutouts may need longer)")
     args = p.parse_args(argv)
     cfg, _ = setup(args)
     key = os.environ.get("TNG_API_KEY")
@@ -91,7 +92,7 @@ def main(argv=None):
     n_ok = n_fail = 0
     t_start = time.time()
     with ThreadPoolExecutor(max_workers=args.workers) as ex, open(log, "a") as lg:
-        futs = {ex.submit(one, s, args.snap, cfg, key, outdir, sub_pos, a, h): s for s in todo}
+        futs = {ex.submit(one, s, args.snap, cfg, key, outdir, sub_pos, a, h, args.timeout): s for s in todo}
         for i, f in enumerate(as_completed(futs), 1):
             sid = futs[f]
             try:

@@ -75,7 +75,7 @@ def test_fetch_script_with_fake_download(tmp_path, monkeypatch):
     spec.loader.exec_module(mod)
     urls = []
 
-    def fake_fetch(url, dest, key):
+    def fake_fetch(url, dest, key, timeout=300):
         urls.append(url)
         sid = int(url.split("/subhalos/")[1].split("/")[0])
         fake_cutout(dest, np.array([100.0, 200.0, 300.0]) + sid, 0.99, seed=sid)
