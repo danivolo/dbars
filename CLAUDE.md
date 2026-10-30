@@ -41,7 +41,7 @@ M★ > 1e10) and catalogs on the cluster under `~/bars` (**read-only**). Goal: a
 
 ## Status
 See README "Status per milestone" and `cluster/README.md` (the user's next commands). The shared-tooling proposals (env file, row hook,
-fetch rule) are committed on `core-fixes-yield-archive` (d0759d1); `cluster/proposed/` stays the source of truth for the hook.
+fetch rule) are committed on `core-fixes-yield-archive` (d0759d1, cc65b34) and are now contained in `core-fixes` [verified 2026-10-30]; `cluster/proposed/` stays the source of truth for the hook.
 
 ## Working notes
 - The laptop is often at load 30-50: time with `time.process_time()`, not wall clock; the full test suite takes 2-6 min wall.
