@@ -116,6 +116,9 @@ Expected: `snap 99: N galaxies classified, 0 unreadable: {'single': .., 'unbarre
 `snap 99: F figures (...) -> .../figures/snap99/index.html`. Paste both lines; we inspect the contact sheet together on the laptop
 (`~/astro/runs/bars/diag99/figures/snap99/index.html`) and tune the thresholds (`--set classify.omega_nsigma=...`; 03 is cheap to rerun).
 
+### View file (optional, cockpit)
+A sidecar on the login node writes `<RUNDIR>/view.json` from the logs every 2 min: `$PY scripts/write_view.py --config config/cluster.yaml --snap 99 --out <RUNDIR> --interval 120 --max-minutes 600` (see D21); it stops when all galaxies are in the logs.
+
 ## 6. Restartability proof (RESTARTABLE.md rule 5), once
 Stop a run, resume it, compare with an uninterrupted one. A resume job writes into the run directory of the stopped one
 (`DBARS_OUT`); a stop file older than the new job's start is ignored, so nothing has to be cleaned.

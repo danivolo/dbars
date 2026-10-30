@@ -171,3 +171,12 @@ Picked on the cluster from the step-01 table: 3 Zana+22 barred, 2 unbarred discs
 - 2026-10-19, first real cutouts [verified: user's output]: format as expected (all six fields, a = 0.99057 at snap 98, units physical);
   the two largest missing snap-98 galaxies have ~5e6 stars, 300+ MB at float64 (~63 B/star), 2.5-3.5 min each. Arrays now stored as
   float32 (TNG's own precision), ~40 B/star; the two float64 files stay valid (the reader converts to float64 anyway).
+
+## D21. Cockpit view.json writer (2026-10-30)
+- `scripts/write_view.py` + `src/dbars/viewjson.py` build `view.json` (astro.view/1, ~/astro/docs/cockpit/FORMATS.md §1) from `logs/diag_snap<SNAP>*.log`.
+- Why a separate sidecar and not a hook inside step 02: 20 tasks write concurrently; one reader of the logs avoids races and cannot slow an analysis task.
+  It reads from remembered byte offsets (`<out>/output/view_state.json`), ignores a half-written last line, writes atomically; a retry of a failed galaxy replaces its failure.
+- Content: stage + ETA (rough, average rate), the double fraction with binomial error and label counts, failed-fraction check (PASS < 1 %, WARN 1-5 %), series
+  (<= 400 points). `provisional` always set: thresholds untuned. Not in it: agreement with Zana+22 (exists only after step 03), task exit codes (the cockpit reads STATUS).
+- Alternatives: writer inside `02_galaxy_diagnostics.py` (races, couples I/O to the job); aggregating the profile files (re-reads every file).
+- Verification [verified 2026-10-30]: `astro view-check` on the output for a fake run of 60 log lines: valid; `tests/test_viewjson.py` (3 tests).
