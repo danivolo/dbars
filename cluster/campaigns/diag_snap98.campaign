@@ -1,8 +1,8 @@
 #question: bar diagnostics (Fourier, Omega_p, ellipse fits, maps, first labels) for every snap-98 galaxy with an npz
 #criteria: every task exits 0; galaxies:N/N in `astro row`; failed galaxies listed in logs/ (status=fail) are understood before step 03
-#cost: 1 job x 1 node, ~45 tasks of ~20 galaxies, 20 at a time; --mem and --time from the diag98_t20 dry run (milestone 4)
+#cost: 1 job x 1 node, ~45 tasks of ~20 galaxies, 20 at a time; --mem 64 and --time 04:00:00 from the diag99_t20 dry run (20 largest galaxies: 2.0-2.7 min each, <= 3.4 GB RSS)
 #expect: as diag_snap99 for the 878 snap-98 galaxies once the 17 missing cutouts are fetched; labels of the galaxies present in both snapshots mostly agree (a flip of a double label between snapshots 98 and 99 means the threshold sits on a borderline galaxy)
 #view: view.json (scripts/write_view.py, run by hand or as a sidecar; reads logs/diag_snap*.log)
 #by: claude (bars chat)
 #next: time evolution (milestone 6) for the double candidates
-bars diag98 --script $HOME/astro/gizmo/scripts/cluster/submit_python_tasks.slurm --env WORKDIR=$HOME/astro/clap/bars --mem 64 --time TODO_FROM_DRY_RUN -- $HOME/astro/scratch/bars/tasks/diag_snap98.txt
+bars diag98 --script $HOME/astro/gizmo/scripts/cluster/submit_python_tasks.slurm --env WORKDIR=$HOME/astro/clap/bars --mem 64 --time 04:00:00 -- $HOME/astro/scratch/bars/tasks/diag_snap98.txt
