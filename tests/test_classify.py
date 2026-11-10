@@ -75,3 +75,20 @@ def test_ellipse_double_signature(cfg):
 def test_ellipse_failure_returns_empty():
     prof = ellipse.fit_isophotes(np.zeros((50, 50)), 0.1)
     assert prof["sma"].size == 0 and ellipse.ellipse_bars(prof) == []
+
+
+def test_outer_disc_segment_is_not_a_bar(cfg):
+    """A bar plus an m=2 segment that starts beyond bar_start_max_rhalf * r_half must not become a 'double' (D22)."""
+    r, _ = _run("single", cfg)
+    prof = r["profile"]
+    n = len(prof["r"])
+    rr = prof["r"]
+    A2, phi, valid = np.array(prof["A2"], float), np.array(prof["phi2"], float), np.ones(n, bool)
+    far = rr > 3 * r["frame"]["r_half"]
+    A2[far] = 0.5
+    phi[far] = 1.2
+    mod = dict(prof, A2=A2, phi2=phi, valid=valid)
+    with_rule = classify.classify_profiles(mod, cfg, 0.288, r_half=r["frame"]["r_half"])
+    no_rule = classify.classify_profiles(mod, dict(cfg, classify=dict(cfg["classify"], bar_start_max_rhalf=None)), 0.288)
+    assert with_rule["label"] == "single" and with_rule["outer_r_start"] <= r["frame"]["r_half"]
+    assert no_rule["n_segments"] > with_rule["n_segments"]

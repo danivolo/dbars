@@ -2,7 +2,7 @@
 <!-- Rewrite at the end of every working session; under 60 lines; history goes to DECISIONS.md. Format: ~/astro/docs/cockpit/FORMATS.md §5 -->
 
 ## Doing now
-- 2026-11-09: `diag99` (step 02, snap 99, ~870 galaxies, `--mem 64 --time 04:00:00`) submitted by the user; nothing of mine is running.
+- 2026-11-10: `diag99` finished (870 ok, 0 failed, 16 min). First tuning (D22): bars must start inside r_half; 36 doubles -> 8. Not yet on the cluster.
 - 2026-11-09: dry run `diag99_t20` read: 20/20 ok, 2.0-2.7 min and <= 3.4 GB per galaxy, 370 kB per profile. Snap-98 cutouts complete (878/878 with npz).
 
 ## Waiting on the user

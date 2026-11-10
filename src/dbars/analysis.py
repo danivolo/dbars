@@ -54,7 +54,7 @@ def analyse_galaxy(stars: dict, cfg: dict, softening_kpc: float, seed: int = 0, 
     else:
         el, peaks = None, None
 
-    cls = classify.classify_profiles(prof, cfg, softening_kpc, ellipse_runs=peaks)
+    cls = classify.classify_profiles(prof, cfg, softening_kpc, ellipse_runs=peaks, r_half=g["r_half"])
     seg_om = {}
     for k in ("outer", "inner"):
         r0, r1 = cls[f"{k}_r_start"], cls[f"{k}_r_end"]

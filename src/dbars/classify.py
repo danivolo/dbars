@@ -97,7 +97,7 @@ def _ellipse_match(bar, runs, lo, hi, pa_tol):
     return None
 
 
-def classify_profiles(prof, cfg, softening_kpc, ellipse_runs=None):
+def classify_profiles(prof, cfg, softening_kpc, ellipse_runs=None, r_half=None):
     """Classify one galaxy.
 
     ``prof``: dict with r, edges [kpc], A2, phi2 [rad], phi2_err [rad], valid, omega, omega_err [km/s/kpc],
@@ -108,6 +108,9 @@ def classify_profiles(prof, cfg, softening_kpc, ellipse_runs=None):
     r_start, r_end, a2_peak, phi2_deg, omega, omega_err; length_ratio, misalignment_deg (inner - outer, in
     (-90, 90]), phase_offset_sigma, inner_len_soft, inner_marginal, domega_sigma, ellipse_outer, ellipse_inner,
     ellipse_agrees (None when no ellipse fit is available).
+
+    ``r_half`` [kpc]: stellar half-mass radius; with ``classify.bar_start_max_rhalf`` set, segments starting beyond
+    that many r_half are outer-disc m=2 structure (spiral arms, tidal tails), not bars, and are ignored (D22).
     """
     an, cl = cfg["analysis"], cfg["classify"]
     prof = dict(prof)
@@ -115,6 +118,9 @@ def classify_profiles(prof, cfg, softening_kpc, ellipse_runs=None):
     segs = find_segments(prof["r"], prof["edges"], prof["A2"], prof["phi2"], prof["valid"],
                          an["a2_threshold"], an["phase_tol_deg"], cl["min_segment_bins"])
     props = [segment_properties(s, prof) for s in segs]
+    rmax_start = cl.get("bar_start_max_rhalf")
+    if rmax_start and r_half:
+        props = [p for p in props if p["r_start"] <= rmax_start * r_half]
     out = dict(label="unbarred", n_segments=len(props), segments=props)
     nan = float("nan")
     for k in ("outer", "inner"):

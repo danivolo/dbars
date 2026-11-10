@@ -34,7 +34,7 @@ def main(argv=None):
     for f in sorted(pdir.glob("sub_*.h5")):
         try:
             r = read_result(f)
-            c = classify_profiles(r["profile"], cfg, float(r["attrs"]["softening_kpc"]), ellipse_runs=r["ellipse_runs"])
+            c = classify_profiles(r["profile"], cfg, float(r["attrs"]["softening_kpc"]), ellipse_runs=r["ellipse_runs"], r_half=float(r["frame"]["r_half"]))
         except Exception as e:
             bad += 1
             print(f"{f.name}: {type(e).__name__}: {e}", file=sys.stderr)

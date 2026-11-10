@@ -34,6 +34,7 @@ analysis:
   ellipse_step: 0.1
 classify:                        # tuned after visual inspection (milestone 5; see DECISIONS)
   min_segment_bins: 3
+  bar_start_max_rhalf: 1.0       # a bar segment must start inside this many r_half (outer-disc spirals start at 2-3 r_half; D22)
   phase_offset_min_deg: 15.0     # inner/outer phase offset must exceed this ...
   phase_offset_nsigma: 3.0       # ... and this many sigma
   omega_nsigma: 3.0              # decoupled: |Om_in - Om_out| > nsigma * sigma ...
