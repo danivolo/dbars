@@ -42,7 +42,7 @@ def test_double_parameters(cfg):
 
 def test_marginal_flag(cfg):
     r, _ = _run("double", cfg)
-    c = classify.classify_profiles(r["profile"], cfg, softening_kpc=0.5)   # 0.8 kpc = 1.6 softenings
+    c = classify.classify_profiles(r["profile"], cfg, softening_kpc=0.5)   # 1.0 kpc = 2 softenings
     assert c["inner_marginal"]
 
 
@@ -92,3 +92,22 @@ def test_outer_disc_segment_is_not_a_bar(cfg):
     no_rule = classify.classify_profiles(mod, dict(cfg, classify=dict(cfg["classify"], bar_start_max_rhalf=None)), 0.288)
     assert with_rule["label"] == "single" and with_rule["outer_r_start"] <= r["frame"]["r_half"]
     assert no_rule["n_segments"] > with_rule["n_segments"]
+
+
+def test_marginal_inner_bar_is_not_a_double(cfg):
+    r, _ = _run("double", cfg)
+    ok = classify.classify_profiles(r["profile"], cfg, softening_kpc=0.288)
+    small = classify.classify_profiles(r["profile"], cfg, softening_kpc=0.5)      # inner bar ~2 softenings
+    assert ok["label"] == "double_decoupled" and small["label"] == "double_marginal" and small["inner_marginal"]
+
+
+def test_decoupled_needs_omega_plateaus(cfg):
+    r, _ = _run("double", cfg)
+    prof = dict(r["profile"])
+    c0 = classify.classify_profiles(prof, cfg, 0.288)
+    ob = (prof["r"] > c0["outer_r_start"]) & (prof["r"] < c0["outer_r_end"])
+    om = np.array(prof["omega"], float)
+    om[ob] = om[ob].mean() * (1 + 0.8 * np.linspace(-1, 1, ob.sum()))      # Omega_p running through the outer bar
+    c1 = classify.classify_profiles(dict(prof, omega=om), cfg, 0.288)
+    assert c0["label"] == "double_decoupled" and c1["outer_omega_chi2"] > cfg["classify"]["omega_plateau_chi2"]
+    assert c1["label"] == "double_candidate"

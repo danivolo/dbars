@@ -61,7 +61,7 @@ def test_fourier_phases_double():
     edges, rc = fourier.log_bins(0.25, 16.0, 40)
     f = fourier.fourier_profile(R, phi, mass, edges, n_bootstrap=30)
     p = t.params
-    for lo, hi, theta in ((0.3, 0.65, p["theta_in"]), (1.5, 3.2, p["theta_out"])):
+    for lo, hi, theta in ((0.3, 0.65, p["theta_in"]), (1.8, 3.2, p["theta_out"])):
         b = _bar_bins(rc, lo, hi) & f["valid"]
         d = wrap_half_period(f["phase"][1][b] - theta, 2)
         assert np.all(np.abs(d) < 3 * f["phi2_err"][b] + np.radians(2.0)), np.degrees(d)
@@ -120,3 +120,23 @@ def test_dehnen_window_smooth():
     assert W.max() == pytest.approx(1.0, abs=1e-3) and W[0] == 0 and W[-1] == 0
     num = np.gradient(W, R)
     assert np.allclose(num[5:-5], dW[5:-5], atol=0.02)
+
+
+def test_tilt_profile_detects_tilted_core():
+    """Spin axis of an inner disc tilted by 40 deg against the outer disc shows up in tilt_profile."""
+    from dbars import frames
+    rng = np.random.default_rng(3)
+
+    def disc(n, rmax, tilt_deg):
+        R = rmax * np.sqrt(rng.random(n))
+        ph = rng.random(n) * 2 * np.pi
+        pos = np.c_[R * np.cos(ph), R * np.sin(ph), 0.05 * rng.normal(size=n)]
+        vel = 200 * np.c_[-np.sin(ph), np.cos(ph), np.zeros(n)]
+        t = np.radians(tilt_deg)
+        M = np.array([[1, 0, 0], [0, np.cos(t), -np.sin(t)], [0, np.sin(t), np.cos(t)]])
+        return pos @ M.T, vel @ M.T
+    p1, v1 = disc(20000, 1.0, 40.0)
+    p2, v2 = disc(40000, 8.0, 0.0)
+    pos, vel = np.vstack([p1, p2]), np.vstack([v1, v2])
+    tilt = frames.tilt_profile(pos, vel, np.ones(len(pos)), [0.5, 20.0])
+    assert tilt[0] == pytest.approx(40.0, abs=3) and tilt[1] < 20.0

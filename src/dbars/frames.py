@@ -118,3 +118,18 @@ def to_galaxy_frame(pos, vel, mass, r_shrink0=10.0, rmin=0.5, j_radius_rhalf=3.0
     v = vel - vb
     M = face_on_rotation(p, v, mass, jr)
     return dict(pos=p @ M.T, vel=v @ M.T, centre=c, bulk_vel=vb, rotation=M, r_half=r_half, j_radius=jr)
+
+
+def tilt_profile(pos, vel, mass, radii):
+    """Angle [deg] between the angular momentum of the stars inside each radius in ``radii`` [kpc] and +z.
+
+    ``pos``/``vel`` in the galaxy frame (centred, bulk velocity removed, face-on from the angular momentum inside
+    ``j_radius``): 0 deg = same spin axis as the frame, 180 = counter-rotating. NaN where no angular momentum.
+    A tilt of the inner region against the frame makes its face-on map and its m=2 measurements wrong.
+    """
+    out = []
+    for r in radii:
+        L = angular_momentum(pos, vel, mass, r)
+        n = np.linalg.norm(L)
+        out.append(float(np.degrees(np.arccos(np.clip(L[2] / n, -1, 1)))) if n > 0 else float("nan"))
+    return np.array(out)

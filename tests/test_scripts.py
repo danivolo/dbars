@@ -25,7 +25,7 @@ KINDS = {3: "double", 5: "single", 8: "disc"}
 @pytest.fixture(scope="module")
 def synth(tmp_path_factory):
     root = tmp_path_factory.mktemp("synth")
-    truths = write_synthetic_sample(root, 99, KINDS, n_part=60_000)
+    truths = write_synthetic_sample(root, 99, KINDS, n_part=100_000)
     return root, truths
 
 

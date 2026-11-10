@@ -18,8 +18,8 @@ from pathlib import Path
 import numpy as np
 
 LINE = re.compile(r"^(\S+) sid=(\d+) status=(\w+) t=([\d.]+)s(?: reason=(.*))?$")
-DOUBLE = ("double_candidate", "double_decoupled")
-LABELS = ("unbarred", "single", "double_candidate", "double_decoupled")
+DOUBLE = ("double_candidate", "double_decoupled", "double_marginal")
+LABELS = ("unbarred", "single", "double_candidate", "double_decoupled", "double_marginal")
 MAX_POINTS = 400
 NOTE_PROVISIONAL = "labels use untuned thresholds (milestone 5); step 03 relabels from the stored profiles"
 
@@ -119,7 +119,7 @@ def build(state: dict, total: int | None, snap: int, run: str | None = None, fin
     if n:
         ser.append(dict(name="galaxies done", x_label="elapsed [min]", y_label="galaxies",
                         points=_thin([[round(e[0] / 60, 2), e[1]] for e in ev])))
-        ser.append(dict(name="double candidates", x_label="galaxies done", y_label="double_candidate + double_decoupled",
+        ser.append(dict(name="double candidates", x_label="galaxies done", y_label="all double_* labels",
                         points=_thin([[e[1], e[2]] for e in ev])))
     if len(secs) >= 5:
         w = 20
@@ -128,9 +128,9 @@ def build(state: dict, total: int | None, snap: int, run: str | None = None, fin
                         y_label="CPU-bound wall time [s]", points=_thin(med)))
     est = []
     if ok:
-        p = counts["double_candidate"] + counts["double_decoupled"]
+        p = sum(counts[k] for k in DOUBLE)
         f = p / len(ok)
-        est.append(dict(quantity="fraction of galaxies labelled double_candidate or double_decoupled", value=round(f, 4),
+        est.append(dict(quantity="fraction of galaxies labelled double_*", value=round(f, 4),
                         error=round(float(np.sqrt(f * (1 - f) / len(ok))), 4), unit="", counts=counts,
                         trend=state["trend"], basis="labelled galaxies of this run so far (binomial error)",
                         note="provisional: " + NOTE_PROVISIONAL))

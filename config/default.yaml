@@ -39,6 +39,7 @@ classify:                        # tuned after visual inspection (milestone 5; s
   phase_offset_nsigma: 3.0       # ... and this many sigma
   omega_nsigma: 3.0              # decoupled: |Om_in - Om_out| > nsigma * sigma ...
   omega_rel_min: 0.2             # ... and > 20 % of Om_out
+  omega_plateau_chi2: 3.0        # decoupled needs a plateau in both segments: reduced chi2 of a constant Omega_p below this (D23)
   omega_corr_bins: 2.5           # neighbouring Omega_p bins share particles: error of a segment mean x sqrt(this)
   inner_marginal_softenings: 3.0 # inner bar shorter than this many softening lengths is flagged marginal
   ellipse_eps_min: 0.2

@@ -42,11 +42,11 @@ class SynthParams:
     hz_kpc: float = 0.2                 # vertical Gaussian scale [kpc]
     # bars (eps = 0 switches a bar off)
     eps_in: float = 0.0
-    l_in: float = 0.8                   # inner-bar end [kpc]
+    l_in: float = 1.0                   # inner-bar end [kpc]
     theta_in: float = 0.0               # inner-bar angle [rad], intrinsic frame
     omega_in: float = 150.0             # km/s/kpc
     eps_out: float = 0.0
-    r_out_start: float = 1.3            # outer-bar inner edge [kpc] (the gap separates the bars)
+    r_out_start: float = 1.5            # outer-bar inner edge [kpc] (the gap separates the bars)
     l_out: float = 3.5                  # outer-bar end [kpc]
     theta_out: float = 0.0              # rad
     omega_out: float = 40.0             # km/s/kpc

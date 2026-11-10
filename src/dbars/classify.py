@@ -11,7 +11,10 @@ Labels (thresholds in the ``classify`` config section):
 - ``double_candidate``: an inner segment (the strongest one ending inside the start of the outer bar, which is the
   longest segment), with a phase offset
   above ``phase_offset_min_deg`` and ``phase_offset_nsigma`` sigma;
-- ``double_decoupled``: as above and |Omega_in - Omega_out| above ``omega_nsigma`` sigma and ``omega_rel_min`` x Omega_out.
+- ``double_decoupled``: as above and |Omega_in - Omega_out| above ``omega_nsigma`` sigma and ``omega_rel_min`` x Omega_out,
+  and a plateau of Omega_p in both segments (reduced chi^2 of a constant below ``omega_plateau_chi2``);
+- ``double_marginal``: a phase-offset pair whose inner segment is shorter than ``inner_marginal_softenings`` softening
+  lengths (unresolved; listed, not counted as a double candidate; never decoupled).
 
 Radii in kpc, angles in degrees in the outputs, Omega in km/s/kpc.
 """
@@ -22,7 +25,7 @@ import numpy as np
 
 from .fourier import wrap_half_period
 
-LABELS = ("unbarred", "single", "double_candidate", "double_decoupled")
+LABELS = ("unbarred", "single", "double_candidate", "double_decoupled", "double_marginal")
 
 
 def _circ_mean_phase(ph, w):
@@ -81,7 +84,11 @@ def segment_properties(seg, prof):
         mom_err = float(np.sqrt(1.0 / wo.sum()) * np.sqrt(prof.get("omega_corr_bins", 1.0)))
     else:
         mom, mom_err = np.nan, np.nan
-    return dict(i0=int(i0), i1=int(i1), r_start=float(prof["edges"][i0]), r_end=float(prof["edges"][i1 + 1]),
+    chi2 = np.nan                  # reduced chi^2 of a constant Omega_p in the segment (errors x sqrt(corr bins)): plateau test
+    if ov.sum() >= 3:
+        s = oe[ov] * np.sqrt(prof.get("omega_corr_bins", 1.0))
+        chi2 = float(np.sum(((om[ov] - mom) / s) ** 2) / (ov.sum() - 1))
+    return dict(omega_chi2=chi2, i0=int(i0), i1=int(i1), r_start=float(prof["edges"][i0]), r_end=float(prof["edges"][i1 + 1]),
                 a2_peak=float(np.nanmax(A2)), phi2_deg=float(np.degrees(mphi)),
                 phi2_err_deg=float(np.degrees(mphi_err)), omega=mom, omega_err=mom_err, n_omega_bins=int(ov.sum()))
 
@@ -124,14 +131,14 @@ def classify_profiles(prof, cfg, softening_kpc, ellipse_runs=None, r_half=None):
     out = dict(label="unbarred", n_segments=len(props), segments=props)
     nan = float("nan")
     for k in ("outer", "inner"):
-        for f in ("r_start", "r_end", "a2_peak", "phi2_deg", "omega", "omega_err"):
+        for f in ("r_start", "r_end", "a2_peak", "phi2_deg", "omega", "omega_err", "omega_chi2"):
             out[f"{k}_{f}"] = nan
     out.update(length_ratio=nan, misalignment_deg=nan, phase_offset_sigma=nan, inner_len_soft=nan,
                inner_marginal=False, domega_sigma=nan, ellipse_outer=None, ellipse_inner=None, ellipse_agrees=None)
     if not props:
         return out
     outer = max(props, key=lambda p: p["r_end"] - p["r_start"])
-    for f in ("r_start", "r_end", "a2_peak", "phi2_deg", "omega", "omega_err"):
+    for f in ("r_start", "r_end", "a2_peak", "phi2_deg", "omega", "omega_err", "omega_chi2"):
         out[f"outer_{f}"] = outer[f]
     out["label"] = "single"
     inside = [p for p in props if p["r_end"] <= outer["r_start"] + 1e-9]
@@ -146,7 +153,7 @@ def classify_profiles(prof, cfg, softening_kpc, ellipse_runs=None, r_half=None):
         sig = np.hypot(np.radians(inner["phi2_err_deg"]), np.radians(outer["phi2_err_deg"]))
         nsig = abs(dphi) / sig if sig > 0 else np.inf
         if abs(np.degrees(dphi)) > cl["phase_offset_min_deg"] and nsig > cl["phase_offset_nsigma"]:
-            for f in ("r_start", "r_end", "a2_peak", "phi2_deg", "omega", "omega_err"):
+            for f in ("r_start", "r_end", "a2_peak", "phi2_deg", "omega", "omega_err", "omega_chi2"):
                 out[f"inner_{f}"] = inner[f]
             out["label"] = "double_candidate"
             out["length_ratio"] = inner["r_end"] / outer["r_end"]
@@ -158,9 +165,12 @@ def classify_profiles(prof, cfg, softening_kpc, ellipse_runs=None, r_half=None):
             sd = np.hypot(inner["omega_err"], outer["omega_err"])
             if np.isfinite(dom) and sd > 0:
                 out["domega_sigma"] = float(abs(dom) / sd)
+                plateaus = bool(np.all(np.array([inner["omega_chi2"], outer["omega_chi2"]]) <= cl["omega_plateau_chi2"]))   # NaN -> False
                 if (out["domega_sigma"] > cl["omega_nsigma"]
-                        and abs(dom) > cl["omega_rel_min"] * abs(outer["omega"])):
+                        and abs(dom) > cl["omega_rel_min"] * abs(outer["omega"]) and plateaus):
                     out["label"] = "double_decoupled"
+            if out["inner_marginal"]:
+                out["label"] = "double_marginal"
             if peaks is not None:
                 m_out = _ellipse_match(outer, peaks, lo, hi, pat)
                 m_in = _ellipse_match(inner, [p for p in peaks if p is not m_out], lo, hi, pat)

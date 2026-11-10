@@ -20,7 +20,7 @@ from dbars.io.supplementary import read_zana_bars
 FLAT = ("label", "n_segments", "outer_r_start", "outer_r_end", "outer_a2_peak", "outer_phi2_deg", "outer_omega",
         "outer_omega_err", "inner_r_start", "inner_r_end", "inner_a2_peak", "inner_phi2_deg", "inner_omega",
         "inner_omega_err", "length_ratio", "misalignment_deg", "phase_offset_sigma", "inner_len_soft",
-        "inner_marginal", "domega_sigma", "ellipse_outer", "ellipse_inner", "ellipse_agrees")
+        "inner_marginal", "outer_omega_chi2", "inner_omega_chi2", "domega_sigma", "ellipse_outer", "ellipse_inner", "ellipse_agrees")
 
 
 def main(argv=None):
