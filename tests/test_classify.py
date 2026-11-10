@@ -111,3 +111,11 @@ def test_decoupled_needs_omega_plateaus(cfg):
     c1 = classify.classify_profiles(dict(prof, omega=om), cfg, 0.288)
     assert c0["label"] == "double_decoupled" and c1["outer_omega_chi2"] > cfg["classify"]["omega_plateau_chi2"]
     assert c1["label"] == "double_candidate"
+
+
+def test_tilted_core_is_not_a_double(cfg):
+    r, _ = _run("double", cfg)
+    assert r["frame"]["core_tilt_deg"] < 5          # the synthetic galaxy is a flat disc: frame axis = inner spin axis
+    c0 = classify.classify_profiles(r["profile"], cfg, 0.288, core_tilt_deg=3.0)
+    c1 = classify.classify_profiles(r["profile"], cfg, 0.288, core_tilt_deg=45.0)
+    assert c0["label"] == "double_decoupled" and c1["label"] == "tilted_core" and c1["core_tilt_deg"] == 45.0

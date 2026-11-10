@@ -26,6 +26,7 @@ def analyse_galaxy(stars: dict, cfg: dict, softening_kpc: float, seed: int = 0, 
     g = frames.to_galaxy_frame(stars["pos"], stars["vel"], stars["mass"], rmin=an["shrink_sphere_final_kpc"],
                                j_radius_rhalf=an["j_radius_rhalf"])
     pos, vel, mass = g["pos"], g["vel"], stars["mass"]
+    core_tilt = float(frames.tilt_profile(pos, vel, mass, [an["core_tilt_radius_kpc"]])[0])
     R, phi, z, vR, vphi, vz = frames.cylindrical(pos, vel)
 
     rmax = an["rmax_rhalf"] * g["r_half"]
@@ -54,13 +55,15 @@ def analyse_galaxy(stars: dict, cfg: dict, softening_kpc: float, seed: int = 0, 
     else:
         el, peaks = None, None
 
-    cls = classify.classify_profiles(prof, cfg, softening_kpc, ellipse_runs=peaks, r_half=g["r_half"])
+    cls = classify.classify_profiles(prof, cfg, softening_kpc, ellipse_runs=peaks, r_half=g["r_half"],
+                                     core_tilt_deg=core_tilt)
     seg_om = {}
     for k in ("outer", "inner"):
         r0, r1 = cls[f"{k}_r_start"], cls[f"{k}_r_end"]
         if np.isfinite(r0) and np.isfinite(r1) and r1 > r0:
             seg_om[k] = patternspeed.omega_annulus(R, phi, vR, vphi, mass, max(r0, 0.5 * an["rmin_kpc"]), r1,
                                                    n_bootstrap=an["n_bootstrap"], seed=seed + 2)
-    return dict(frame=dict(centre=g["centre"], bulk_vel=g["bulk_vel"], rotation=g["rotation"], r_half=g["r_half"]),
+    return dict(frame=dict(centre=g["centre"], bulk_vel=g["bulk_vel"], rotation=g["rotation"], r_half=g["r_half"],
+                          core_tilt_deg=core_tilt),
                 profile=prof, ellipse=el, ellipse_runs=peaks, maps=mp, m2_map=(m2.astype(np.float32), m2_ext),
                 classification=cls, segment_omega=seg_om, n_stars=int(len(mass)))

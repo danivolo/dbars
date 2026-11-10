@@ -15,6 +15,7 @@ particles:
 analysis:
   shrink_sphere_final_kpc: 0.5
   j_radius_rhalf: 3.0            # face-on from stars within 3 r_half
+  core_tilt_radius_kpc: 1.0      # spin-axis tilt of the stars inside this radius vs the frame axis (D24)
   rmin_kpc: 0.25
   rmax_rhalf: 4.0
   n_rbins: 40                    # log-spaced
@@ -39,6 +40,7 @@ classify:                        # tuned after visual inspection (milestone 5; s
   phase_offset_nsigma: 3.0       # ... and this many sigma
   omega_nsigma: 3.0              # decoupled: |Om_in - Om_out| > nsigma * sigma ...
   omega_rel_min: 0.2             # ... and > 20 % of Om_out
+  core_tilt_max_deg: 15.0        # a double whose inner spin axis is tilted more than this from the frame axis is 'tilted_core' (D24)
   omega_plateau_chi2: 3.0        # decoupled needs a plateau in both segments: reduced chi2 of a constant Omega_p below this (D23)
   omega_corr_bins: 2.5           # neighbouring Omega_p bins share particles: error of a segment mean x sqrt(this)
   inner_marginal_softenings: 3.0 # inner bar shorter than this many softening lengths is flagged marginal

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""3x3 diagnostic figures for every double_candidate / double_decoupled galaxy plus a random control sample of
+"""3x3 diagnostic figures for every double_* and tilted_core galaxy plus a random control sample of
 the others, and an HTML contact sheet for visual inspection.
 
 Reads <out>/classification_snap<SNAP>.parquet and the profile files. Writes <out>/figures/snap<SNAP>/sub_<SID>.png
@@ -28,8 +28,9 @@ COLS = ("sid", "label", "mstar", "outer_r_end", "inner_r_end", "length_ratio", "
 
 
 def pick(df, frac, seed):
-    dbl = df[df["label"].str.startswith("double")]
-    rest = df[~df["label"].str.startswith("double")]
+    is_dbl = df["label"].str.startswith("double") | (df["label"] == "tilted_core")
+    dbl = df[is_dbl]
+    rest = df[~is_dbl]
     n = int(np.ceil(frac * len(rest))) if len(rest) and frac > 0 else 0
     ctrl = rest.sample(n=n, random_state=seed) if n else rest.iloc[:0]
     return pd.concat([dbl.assign(role="candidate"), ctrl.assign(role="control")])

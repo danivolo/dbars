@@ -19,7 +19,7 @@ import numpy as np
 
 LINE = re.compile(r"^(\S+) sid=(\d+) status=(\w+) t=([\d.]+)s(?: reason=(.*))?$")
 DOUBLE = ("double_candidate", "double_decoupled", "double_marginal")
-LABELS = ("unbarred", "single", "double_candidate", "double_decoupled", "double_marginal")
+LABELS = ("unbarred", "single", "double_candidate", "double_decoupled", "double_marginal", "tilted_core")
 MAX_POINTS = 400
 NOTE_PROVISIONAL = "labels use untuned thresholds (milestone 5); step 03 relabels from the stored profiles"
 

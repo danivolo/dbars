@@ -20,7 +20,7 @@ from dbars.io.supplementary import read_zana_bars
 FLAT = ("label", "n_segments", "outer_r_start", "outer_r_end", "outer_a2_peak", "outer_phi2_deg", "outer_omega",
         "outer_omega_err", "inner_r_start", "inner_r_end", "inner_a2_peak", "inner_phi2_deg", "inner_omega",
         "inner_omega_err", "length_ratio", "misalignment_deg", "phase_offset_sigma", "inner_len_soft",
-        "inner_marginal", "outer_omega_chi2", "inner_omega_chi2", "domega_sigma", "ellipse_outer", "ellipse_inner", "ellipse_agrees")
+        "inner_marginal", "core_tilt_deg", "outer_omega_chi2", "inner_omega_chi2", "domega_sigma", "ellipse_outer", "ellipse_inner", "ellipse_agrees")
 
 
 def main(argv=None):
@@ -34,7 +34,8 @@ def main(argv=None):
     for f in sorted(pdir.glob("sub_*.h5")):
         try:
             r = read_result(f)
-            c = classify_profiles(r["profile"], cfg, float(r["attrs"]["softening_kpc"]), ellipse_runs=r["ellipse_runs"], r_half=float(r["frame"]["r_half"]))
+            c = classify_profiles(r["profile"], cfg, float(r["attrs"]["softening_kpc"]), ellipse_runs=r["ellipse_runs"], r_half=float(r["frame"]["r_half"]),
+                                core_tilt_deg=float(r["frame"]["core_tilt_deg"]) if "core_tilt_deg" in r["frame"] else None)
         except Exception as e:
             bad += 1
             print(f"{f.name}: {type(e).__name__}: {e}", file=sys.stderr)

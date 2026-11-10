@@ -14,7 +14,9 @@ Labels (thresholds in the ``classify`` config section):
 - ``double_decoupled``: as above and |Omega_in - Omega_out| above ``omega_nsigma`` sigma and ``omega_rel_min`` x Omega_out,
   and a plateau of Omega_p in both segments (reduced chi^2 of a constant below ``omega_plateau_chi2``);
 - ``double_marginal``: a phase-offset pair whose inner segment is shorter than ``inner_marginal_softenings`` softening
-  lengths (unresolved; listed, not counted as a double candidate; never decoupled).
+  lengths (unresolved; listed, not counted as a double candidate; never decoupled);
+- ``tilted_core``: would be a double, but the spin axis of the inner stars is tilted by more than ``core_tilt_max_deg``
+  against the frame axis (the inner region is not seen face-on).
 
 Radii in kpc, angles in degrees in the outputs, Omega in km/s/kpc.
 """
@@ -25,7 +27,7 @@ import numpy as np
 
 from .fourier import wrap_half_period
 
-LABELS = ("unbarred", "single", "double_candidate", "double_decoupled", "double_marginal")
+LABELS = ("unbarred", "single", "double_candidate", "double_decoupled", "double_marginal", "tilted_core")
 
 
 def _circ_mean_phase(ph, w):
@@ -104,7 +106,7 @@ def _ellipse_match(bar, runs, lo, hi, pa_tol):
     return None
 
 
-def classify_profiles(prof, cfg, softening_kpc, ellipse_runs=None, r_half=None):
+def classify_profiles(prof, cfg, softening_kpc, ellipse_runs=None, r_half=None, core_tilt_deg=None):
     """Classify one galaxy.
 
     ``prof``: dict with r, edges [kpc], A2, phi2 [rad], phi2_err [rad], valid, omega, omega_err [km/s/kpc],
@@ -118,6 +120,9 @@ def classify_profiles(prof, cfg, softening_kpc, ellipse_runs=None, r_half=None):
 
     ``r_half`` [kpc]: stellar half-mass radius; with ``classify.bar_start_max_rhalf`` set, segments starting beyond
     that many r_half are outer-disc m=2 structure (spiral arms, tidal tails), not bars, and are ignored (D22).
+    ``core_tilt_deg``: angle between the spin axis of the stars inside ``analysis.core_tilt_radius_kpc`` and the face-on
+    frame axis (None/NaN = unknown); above ``classify.core_tilt_max_deg`` a double label becomes ``tilted_core``: the
+    inner region is not face-on in the frame, so its m=2 profile and Omega_p are not those of a bar (D24).
     """
     an, cl = cfg["analysis"], cfg["classify"]
     prof = dict(prof)
@@ -128,7 +133,8 @@ def classify_profiles(prof, cfg, softening_kpc, ellipse_runs=None, r_half=None):
     rmax_start = cl.get("bar_start_max_rhalf")
     if rmax_start and r_half:
         props = [p for p in props if p["r_start"] <= rmax_start * r_half]
-    out = dict(label="unbarred", n_segments=len(props), segments=props)
+    out = dict(label="unbarred", n_segments=len(props), segments=props,
+               core_tilt_deg=float("nan") if core_tilt_deg is None else float(core_tilt_deg))
     nan = float("nan")
     for k in ("outer", "inner"):
         for f in ("r_start", "r_end", "a2_peak", "phi2_deg", "omega", "omega_err", "omega_chi2"):
@@ -175,6 +181,8 @@ def classify_profiles(prof, cfg, softening_kpc, ellipse_runs=None, r_half=None):
                 m_out = _ellipse_match(outer, peaks, lo, hi, pat)
                 m_in = _ellipse_match(inner, [p for p in peaks if p is not m_out], lo, hi, pat)
                 out["ellipse_inner"] = m_in is not None
+    if out["label"].startswith("double") and out["core_tilt_deg"] > cl["core_tilt_max_deg"]:
+        out["label"] = "tilted_core"
     if peaks is not None:
         if out["label"].startswith("double"):
             out["ellipse_agrees"] = bool(out["ellipse_outer"] and out["ellipse_inner"])
