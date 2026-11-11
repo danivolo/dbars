@@ -98,3 +98,28 @@ def test_fetch_script_with_fake_download(tmp_path, monkeypatch):
     from dbars.config import load_config
     c = load_config(cfg, [f"paths.stars_npz.98={legacy}"])
     assert particles.npz_path(c, 98, 2) == cut / "subhalo_2_stars.npz"
+
+
+def test_truncated_download_is_fetched_again(tmp_path, monkeypatch):
+    """The server cut a download short (h5py: 'truncated file'): the galaxy is fetched again, not logged as failed."""
+    root = tmp_path / "synth"
+    write_fake_catalog(root, 98, {4: (5e10, 3000, 4.0)}, a=0.99)
+    (root / "stars_snap98").mkdir(parents=True)
+    monkeypatch.setenv("DBARS_SYNTH_DIR", str(root))
+    monkeypatch.setenv("TNG_API_KEY", "dummy")
+    spec = importlib.util.spec_from_file_location("fetch_cutouts", REPO / "scripts/fetch_cutouts.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    calls = []
+
+    def fake_fetch(url, dest, key, timeout=300):
+        calls.append(url)
+        fake_cutout(dest, np.array([100.0, 200.0, 300.0]) + 4, 0.99, seed=4)
+        if len(calls) == 1:
+            dest.write_bytes(dest.read_bytes()[: 2000])          # truncated
+        return dest
+
+    monkeypatch.setattr(mod, "fetch", fake_fetch)
+    cfg = str(REPO / "config/local_test.yaml")
+    assert mod.main(["--config", cfg, "--snap", "98", "--workers", "1", "--set", f"paths.stars_npz.98={root / 'stars_snap98'}"]) == 0
+    assert len(calls) == 2 and (root / "cutouts_snap98/subhalo_4_stars.npz").exists()

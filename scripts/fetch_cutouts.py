@@ -44,13 +44,21 @@ def fetch(url, dest, key, retries=6, timeout=300):
     raise RuntimeError(f"download failed: {last}")
 
 
-def one(sid, snap, cfg, key, outdir, sub_pos, a, h, timeout=300):
+def one(sid, snap, cfg, key, outdir, sub_pos, a, h, timeout=300, attempts=3):
+    """Download and convert one galaxy. A download the server cut short (h5py: "truncated file") is fetched again."""
     out = outdir / f"subhalo_{sid}_stars.npz"
     raw = outdir / ".download" / f"cutout_{snap}_{sid}.hdf5"
     raw.parent.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
-    fetch(cutout_url(cfg["sim"]["name"], snap, sid), raw, key, timeout=timeout)
-    data = convert_cutout(raw, sub_pos[sid], a, h, float(cfg["sim"]["box_ckpc_h"]))
+    for k in range(attempts):
+        fetch(cutout_url(cfg["sim"]["name"], snap, sid), raw, key, timeout=timeout)
+        try:
+            data = convert_cutout(raw, sub_pos[sid], a, h, float(cfg["sim"]["box_ckpc_h"]))
+            break
+        except OSError:                                 # truncated or unreadable hdf5
+            raw.unlink(missing_ok=True)
+            if k == attempts - 1:
+                raise
     write_npz_atomic(out, data)
     raw.unlink()
     return sid, time.time() - t0, len(data["mass"]), out.stat().st_size
