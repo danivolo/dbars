@@ -1,0 +1,8 @@
+#question: bar diagnostics (Fourier, Omega_p, ellipse fits, maps, first labels) for every snap-94 galaxy with an npz
+#criteria: every task exits 0; galaxies:N/N in `astro row`; failed galaxies listed in logs/ (status=fail) are understood before step 03
+#cost: 1 job x 1 node, ~45 tasks of ~20 galaxies, 20 at a time; --mem 64 and --time 04:00:00 from the diag99_t20 dry run (20 largest galaxies: 2.0-2.7 min each, <= 3.4 GB RSS)
+#expect: as diag99 (profile for every galaxy, < 1 % failures; a few labelled double_* , provisional); a double label that appears at several of the snapshots 99-94 for the same galaxy is more credible than one that appears once
+#view: view.json (scripts/write_view.py, run by hand or as a sidecar; reads logs/diag_snap*.log)
+#by: claude (bars chat)
+#next: time evolution (milestone 6): follow the double candidates through snapshots 99-94
+bars diag94 --script $HOME/astro/gizmo/scripts/cluster/submit_python_tasks.slurm --env WORKDIR=$HOME/astro/clap/bars --mem 64 --time 04:00:00 -- $HOME/astro/scratch/bars/tasks/diag_snap94.txt
